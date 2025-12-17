@@ -1,0 +1,93 @@
+
+package models
+
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
+
+// User represents a user in the system
+type User struct {
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	Email     string         `gorm:"uniqueIndex;not null" json:"email"`
+	Password  string         `gorm:"not null" json:"-"` // Never send password in JSON
+	Name      string         `gorm:"not null" json:"name"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+
+	// Profile information
+	Profile *UserProfile `gorm:"foreignKey:UserID" json:"profile,omitempty"`
+
+	// Relationships
+	Workouts       []Workout       `gorm:"foreignKey:UserID" json:"workouts,omitempty"`
+	NutritionDays  []NutritionDay  `gorm:"foreignKey:UserID" json:"nutrition_days,omitempty"`
+	ProgressPhotos []ProgressPhoto `gorm:"foreignKey:UserID" json:"progress_photos,omitempty"`
+	WeightEntries  []WeightEntry   `gorm:"foreignKey:UserID" json:"weight_entries,omitempty"`
+}
+
+// UserProfile represents additional user profile information
+type UserProfile struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	UserID    uint      `gorm:"uniqueIndex;not null" json:"user_id"`
+	Height    *float64  `json:"height,omitempty"`    // in cm
+	Weight    *float64  `json:"weight,omitempty"`    // in kg
+	Age       *int      `json:"age,omitempty"`
+	Gender    string    `json:"gender,omitempty"`    // "male", "female", "other"
+	Goal      string    `json:"goal,omitempty"`      // "lose_weight", "gain_muscle", "maintain"
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// UserRegisterRequest represents the registration request
+type UserRegisterRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=8"`
+	Name     string `json:"name" binding:"required,min=2"`
+}
+
+// UserLoginRequest represents the login request
+type UserLoginRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+}
+
+// UserUpdateRequest represents the user update request
+type UserUpdateRequest struct {
+	Name   *string `json:"name,omitempty"`
+	Email  *string `json:"email,omitempty" binding:"omitempty,email"`
+	Height *float64 `json:"height,omitempty"`
+	Weight *float64 `json:"weight,omitempty"`
+	Age    *int    `json:"age,omitempty"`
+	Gender *string `json:"gender,omitempty"`
+	Goal   *string `json:"goal,omitempty"`
+}
+
+// UserResponse represents the user response (without sensitive data)
+type UserResponse struct {
+	ID        uint          `json:"id"`
+	Email     string        `json:"email"`
+	Name      string        `json:"name"`
+	Profile   *UserProfile  `json:"profile,omitempty"`
+	CreatedAt time.Time     `json:"created_at"`
+	UpdatedAt time.Time     `json:"updated_at"`
+}
+
+// ToResponse converts User to UserResponse
+func (u *User) ToResponse() *UserResponse {
+	return &UserResponse{
+		ID:        u.ID,
+		Email:     u.Email,
+		Name:      u.Name,
+		Profile:   u.Profile,
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
+	}
+}
+
+// AuthResponse represents the authentication response
+type AuthResponse struct {
+	Token string        `json:"token"`
+	User  *UserResponse `json:"user"`
+}
