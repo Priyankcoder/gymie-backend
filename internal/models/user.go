@@ -13,8 +13,8 @@ type User struct {
 	Email     string         `gorm:"uniqueIndex;not null" json:"email"`
 	Password  string         `gorm:"not null" json:"-"` // Never send password in JSON
 	Name      string         `gorm:"not null" json:"name"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Profile information
@@ -22,22 +22,22 @@ type User struct {
 
 	// Relationships
 	Workouts       []Workout       `gorm:"foreignKey:UserID" json:"workouts,omitempty"`
-	NutritionDays  []NutritionDay  `gorm:"foreignKey:UserID" json:"nutrition_days,omitempty"`
-	ProgressPhotos []ProgressPhoto `gorm:"foreignKey:UserID" json:"progress_photos,omitempty"`
-	WeightEntries  []WeightEntry   `gorm:"foreignKey:UserID" json:"weight_entries,omitempty"`
+	NutritionDays  []NutritionDay  `gorm:"foreignKey:UserID" json:"nutritionDays,omitempty"`
+	ProgressPhotos []ProgressPhoto `gorm:"foreignKey:UserID" json:"progressPhotos,omitempty"`
+	WeightEntries  []WeightEntry   `gorm:"foreignKey:UserID" json:"weightEntries,omitempty"`
 }
 
 // UserProfile represents additional user profile information
 type UserProfile struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`
-	UserID    uint      `gorm:"uniqueIndex;not null" json:"user_id"`
+	UserID    uint      `gorm:"uniqueIndex;not null" json:"userId"`
 	Height    *float64  `json:"height,omitempty"`    // in cm
 	Weight    *float64  `json:"weight,omitempty"`    // in kg
 	Age       *int      `json:"age,omitempty"`
 	Gender    string    `json:"gender,omitempty"`    // "male", "female", "other"
 	Goal      string    `json:"goal,omitempty"`      // "lose_weight", "gain_muscle", "maintain"
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // UserRegisterRequest represents the registration request
@@ -70,8 +70,8 @@ type UserResponse struct {
 	Email     string        `json:"email"`
 	Name      string        `json:"name"`
 	Profile   *UserProfile  `json:"profile,omitempty"`
-	CreatedAt time.Time     `json:"created_at"`
-	UpdatedAt time.Time     `json:"updated_at"`
+	CreatedAt time.Time     `json:"createdAt"`
+	UpdatedAt time.Time     `json:"updatedAt"`
 }
 
 // ToResponse converts User to UserResponse

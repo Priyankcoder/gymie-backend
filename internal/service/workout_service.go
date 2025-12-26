@@ -4,6 +4,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/yourusername/gymie-backend/internal/models"
@@ -34,12 +35,27 @@ func NewWorkoutService(workoutRepo repository.WorkoutRepository) WorkoutService 
 
 // Create creates a new workout
 func (s *workoutService) Create(ctx context.Context, userID uint, req *models.WorkoutCreateRequest) (*models.Workout, error) {
+	// Debug logging
+	if req.Completed != nil {
+		log.Printf("[DEBUG] req.Completed = %v (value: %v)", req.Completed, *req.Completed)
+	} else {
+		log.Printf("[DEBUG] req.Completed is nil")
+	}
+	
 	workout := &models.Workout{
-		UserID:   userID,
-		Name:     req.Name,
-		Date:     req.Date,
-		Duration: req.Duration,
-		Notes:    req.Notes,
+		UserID:    userID,
+		Name:      req.Name,
+		Date:      req.Date,
+		Duration:  req.Duration,
+		Completed: req.Completed,
+		Notes:     req.Notes,
+	}
+	
+	// Debug logging after assignment
+	if workout.Completed != nil {
+		log.Printf("[DEBUG] workout.Completed = %v (value: %v)", workout.Completed, *workout.Completed)
+	} else {
+		log.Printf("[DEBUG] workout.Completed is nil")
 	}
 
 	// Add exercises
@@ -120,6 +136,9 @@ func (s *workoutService) Update(ctx context.Context, id uint, userID uint, req *
 	}
 	if req.Duration != nil {
 		workout.Duration = req.Duration
+	}
+	if req.Completed != nil {
+		workout.Completed = req.Completed
 	}
 	if req.Notes != nil {
 		workout.Notes = *req.Notes

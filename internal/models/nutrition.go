@@ -10,11 +10,11 @@ import (
 // NutritionDay represents a day's nutrition tracking
 type NutritionDay struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
-	UserID    uint           `gorm:"not null;index" json:"user_id"`
+	UserID    uint           `gorm:"not null;index" json:"userId"`
 	Date      time.Time      `gorm:"not null;index:idx_user_date,unique" json:"date"`
 	Notes     string         `json:"notes,omitempty"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relationships
@@ -22,20 +22,20 @@ type NutritionDay struct {
 	Meals []Meal `gorm:"foreignKey:NutritionDayID;constraint:OnDelete:CASCADE" json:"meals,omitempty"`
 
 	// Calculated fields (not stored in DB)
-	TotalCalories int `gorm:"-" json:"total_calories"`
-	TotalProtein  int `gorm:"-" json:"total_protein"`
-	TotalCarbs    int `gorm:"-" json:"total_carbs"`
-	TotalFat      int `gorm:"-" json:"total_fat"`
+	TotalCalories int `gorm:"-" json:"totalCalories"`
+	TotalProtein  int `gorm:"-" json:"totalProtein"`
+	TotalCarbs    int `gorm:"-" json:"totalCarbs"`
+	TotalFat      int `gorm:"-" json:"totalFat"`
 }
 
 // Meal represents a meal within a nutrition day
 type Meal struct {
 	ID              uint           `gorm:"primaryKey" json:"id"`
-	NutritionDayID  uint           `gorm:"not null;index" json:"nutrition_day_id"`
+	NutritionDayID  uint           `gorm:"not null;index" json:"nutritionDayId"`
 	Name            string         `gorm:"not null" json:"name"` // "Breakfast", "Lunch", etc.
 	Time            *time.Time     `json:"time,omitempty"`
-	CreatedAt       time.Time      `json:"created_at"`
-	UpdatedAt       time.Time      `json:"updated_at"`
+	CreatedAt       time.Time      `json:"createdAt"`
+	UpdatedAt       time.Time      `json:"updatedAt"`
 	DeletedAt       gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relationships
@@ -43,16 +43,16 @@ type Meal struct {
 	Foods        []Food       `gorm:"foreignKey:MealID;constraint:OnDelete:CASCADE" json:"foods,omitempty"`
 
 	// Calculated fields (not stored in DB)
-	TotalCalories int `gorm:"-" json:"total_calories"`
-	TotalProtein  int `gorm:"-" json:"total_protein"`
-	TotalCarbs    int `gorm:"-" json:"total_carbs"`
-	TotalFat      int `gorm:"-" json:"total_fat"`
+	TotalCalories int `gorm:"-" json:"totalCalories"`
+	TotalProtein  int `gorm:"-" json:"totalProtein"`
+	TotalCarbs    int `gorm:"-" json:"totalCarbs"`
+	TotalFat      int `gorm:"-" json:"totalFat"`
 }
 
 // Food represents a food item within a meal
 type Food struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
-	MealID    uint           `gorm:"not null;index" json:"meal_id"`
+	MealID    uint           `gorm:"not null;index" json:"mealId"`
 	Name      string         `gorm:"not null" json:"name"`
 	Calories  int            `gorm:"not null" json:"calories"`
 	Protein   int            `json:"protein"`  // in grams
@@ -60,8 +60,8 @@ type Food struct {
 	Fat       int            `json:"fat"`      // in grams
 	Quantity  float64        `gorm:"default:1" json:"quantity"`
 	Unit      string         `json:"unit,omitempty"` // "serving", "grams", "oz", etc.
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relationships

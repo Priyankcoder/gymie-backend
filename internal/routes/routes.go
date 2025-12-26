@@ -47,6 +47,7 @@ func SetupRouter(services *service.Services, cfg *config.Config) *gin.Engine {
 		workoutHandler := handlers.NewWorkoutHandler(services.Workout)
 		nutritionHandler := handlers.NewNutritionHandler(services.Nutrition)
 		progressHandler := handlers.NewProgressHandler(services.Progress)
+		workoutPlanHandler := handlers.NewWorkoutPlanHandler(services.WorkoutPlan)
 
 		// Public routes (no authentication required)
 		auth := v1.Group("/auth")
@@ -114,6 +115,32 @@ func SetupRouter(services *service.Services, cfg *config.Config) *gin.Engine {
 
 				// Upload URL generation
 				progress.GET("/upload-url", progressHandler.GenerateUploadURL)
+			}
+
+			// Workout Plan routes
+			workoutPlans := protected.Group("/workout-plans")
+			{
+				workoutPlans.POST("", workoutPlanHandler.CreatePlan)
+				workoutPlans.GET("", workoutPlanHandler.ListPlans)
+				workoutPlans.GET("/active", workoutPlanHandler.GetActivePlan)
+				workoutPlans.GET("/:id", workoutPlanHandler.GetPlan)
+				workoutPlans.PUT("/:id", workoutPlanHandler.UpdatePlan)
+				workoutPlans.DELETE("/:id", workoutPlanHandler.DeletePlan)
+				workoutPlans.PUT("/:id/active", workoutPlanHandler.SetActivePlan)
+				workoutPlans.POST("/:id/clone", workoutPlanHandler.ClonePlan)
+				workoutPlans.PUT("/:id/recurrence", workoutPlanHandler.SetRecurrence)
+			}
+
+			// Scheduled Workout routes
+			scheduledWorkouts := protected.Group("/scheduled-workouts")
+			{
+				scheduledWorkouts.GET("", workoutPlanHandler.ListScheduled)
+				scheduledWorkouts.GET("/today", workoutPlanHandler.GetTodaysWorkout)
+				scheduledWorkouts.GET("/:id", workoutPlanHandler.GetScheduled)
+				scheduledWorkouts.PUT("/:id/status", workoutPlanHandler.UpdateScheduledStatus)
+				scheduledWorkouts.DELETE("/:id", workoutPlanHandler.DeleteScheduled)
+				scheduledWorkouts.POST("/generate", workoutPlanHandler.GenerateScheduled)
+				scheduledWorkouts.DELETE("/plan/:plan_id", workoutPlanHandler.ClearPlanSchedule)
 			}
 		}
 	}

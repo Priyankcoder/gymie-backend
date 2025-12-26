@@ -10,13 +10,13 @@ import (
 // ProgressPhoto represents a progress photo
 type ProgressPhoto struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
-	UserID      uint           `gorm:"not null;index" json:"user_id"`
+	UserID      uint           `gorm:"not null;index" json:"userId"`
 	Date        time.Time      `gorm:"not null;index" json:"date"`
-	ImageURL    string         `gorm:"not null" json:"image_url"`
+	ImageURL    string         `gorm:"not null" json:"imageUrl"`
 	Weight      *float64       `json:"weight,omitempty"` // in kg
 	Notes       string         `json:"notes,omitempty"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
+	CreatedAt   time.Time      `json:"createdAt"`
+	UpdatedAt   time.Time      `json:"updatedAt"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relationships
@@ -26,12 +26,12 @@ type ProgressPhoto struct {
 // WeightEntry represents a weight tracking entry
 type WeightEntry struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
-	UserID    uint           `gorm:"not null;index" json:"user_id"`
+	UserID    uint           `gorm:"not null;index" json:"userId"`
 	Date      time.Time      `gorm:"not null;index" json:"date"`
 	Weight    float64        `gorm:"not null" json:"weight"` // in kg
 	Notes     string         `json:"notes,omitempty"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relationships
@@ -69,17 +69,17 @@ type WeightEntryUpdateRequest struct {
 
 // WeightProgressResponse represents weight progress over time
 type WeightProgressResponse struct {
-	StartWeight   *float64     `json:"start_weight,omitempty"`
-	CurrentWeight *float64     `json:"current_weight,omitempty"`
-	GoalWeight    *float64     `json:"goal_weight,omitempty"`
-	TotalChange   float64      `json:"total_change"`
-	AverageChange float64      `json:"average_change"` // per week
+	StartWeight   *float64     `json:"startWeight,omitempty"`
+	CurrentWeight *float64     `json:"currentWeight,omitempty"`
+	GoalWeight    *float64     `json:"goalWeight,omitempty"`
+	TotalChange   float64      `json:"totalChange"`
+	AverageChange float64      `json:"averageChange"` // per week
 	Entries       []WeightEntry `json:"entries"`
 }
 
 // UploadURLResponse represents a presigned upload URL response
 type UploadURLResponse struct {
-	UploadURL string    `json:"upload_url"`
-	FileURL   string    `json:"file_url"`
-	ExpiresAt time.Time `json:"expires_at"`
+	UploadURL string    `json:"uploadUrl"`
+	FileURL   string    `json:"fileUrl"`
+	ExpiresAt time.Time `json:"expiresAt"`
 }

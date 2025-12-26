@@ -35,6 +35,9 @@ func main() {
 		&models.Food{},
 		&models.ProgressPhoto{},
 		&models.WeightEntry{},
+		&models.WorkoutPlan{},
+		&models.WorkoutPlanDay{},
+		&models.ScheduledWorkout{},
 	)
 
 	if err != nil {
