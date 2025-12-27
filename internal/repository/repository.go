@@ -8,6 +8,7 @@ import (
 
 // Repositories holds all repository instances
 type Repositories struct {
+	DB          *gorm.DB
 	User        UserRepository
 	Workout     WorkoutRepository
 	Nutrition   NutritionRepository
@@ -18,6 +19,7 @@ type Repositories struct {
 // NewRepositories creates a new Repositories instance
 func NewRepositories(db *gorm.DB, redis *redis.Client) *Repositories {
 	return &Repositories{
+		DB:          db,
 		User:        NewUserRepository(db, redis),
 		Workout:     NewWorkoutRepository(db, redis),
 		Nutrition:   NewNutritionRepository(db, redis),

@@ -1,0 +1,363 @@
+
+{
+  "version": "1.0.0",
+  "last_updated": "2025-12-27",
+  "total_dishes": 500,
+  "categories": [
+    "dal",
+    "rice",
+    "bread",
+    "curry",
+    "snack",
+    "breakfast",
+    "beverage",
+    "dessert"
+  ],
+  "dishes": {
+    "DAL_MAKHANI": {
+      "display_name": "Dal Makhani",
+      "aliases": ["makhani dal", "black dal", "kaali dal", "dal makhni"],
+      "category": "dal",
+      "cuisine": "indian",
+      "description": "Rich black lentils in creamy tomato sauce"
+    },
+    "DAL_TADKA": {
+      "display_name": "Dal Tadka",
+      "aliases": ["tadka dal", "yellow dal fry", "dal fry"],
+      "category": "dal",
+      "cuisine": "indian",
+      "description": "Tempered yellow lentils"
+    },
+    "DAL_FRY": {
+      "display_name": "Dal Fry",
+      "aliases": ["fried dal", "toor dal fry"],
+      "category": "dal",
+      "cuisine": "indian",
+      "description": "Fried split pigeon peas"
+    },
+    "SAMBAR": {
+      "display_name": "Sambar",
+      "aliases": ["sambhar", "south indian dal"],
+      "category": "dal",
+      "cuisine": "indian",
+      "description": "South Indian lentil vegetable stew"
+    },
+    "RAJMA_MASALA": {
+      "display_name": "Rajma Masala",
+      "aliases": ["rajma", "kidney beans curry", "rajma chawal"],
+      "category": "dal",
+      "cuisine": "indian",
+      "description": "Red kidney beans in spiced gravy"
+    },
+    "CHOLE_MASALA": {
+      "display_name": "Chole Masala",
+      "aliases": ["chana masala", "chickpea curry", "chole"],
+      "category": "dal",
+      "cuisine": "indian",
+      "description": "Spiced chickpea curry"
+    },
+    "RICE_BASMATI_PLAIN": {
+      "display_name": "Plain Basmati Rice",
+      "aliases": ["steamed rice", "white rice", "boiled rice"],
+      "category": "rice",
+      "cuisine": "indian",
+      "description": "Steamed basmati rice"
+    },
+    "RICE_JEERA": {
+      "display_name": "Jeera Rice",
+      "aliases": ["cumin rice", "zeera rice"],
+      "category": "rice",
+      "cuisine": "indian",
+      "description": "Basmati rice tempered with cumin"
+    },
+    "BIRYANI_CHICKEN": {
+      "display_name": "Chicken Biryani",
+      "aliases": ["murgh biryani", "chicken dum biryani"],
+      "category": "rice",
+      "cuisine": "indian",
+      "description": "Layered rice with spiced chicken"
+    },
+    "BIRYANI_MUTTON": {
+      "display_name": "Mutton Biryani",
+      "aliases": ["lamb biryani", "gosht biryani"],
+      "category": "rice",
+      "cuisine": "indian",
+      "description": "Layered rice with spiced mutton"
+    },
+    "BIRYANI_VEGETABLE": {
+      "display_name": "Vegetable Biryani",
+      "aliases": ["veg biryani", "sabzi biryani"],
+      "category": "rice",
+      "cuisine": "indian",
+      "description": "Layered rice with mixed vegetables"
+    },
+    "PULAO_VEGETABLE": {
+      "display_name": "Vegetable Pulao",
+      "aliases": ["veg pulav", "vegetable pilaf"],
+      "category": "rice",
+      "cuisine": "indian",
+      "description": "Mildly spiced rice with vegetables"
+    },
+    "ROTI_PLAIN": {
+      "display_name": "Plain Roti",
+      "aliases": ["chapati", "phulka", "indian flatbread"],
+      "category": "bread",
+      "cuisine": "indian",
+      "description": "Whole wheat flatbread"
+    },
+    "NAAN_PLAIN": {
+      "display_name": "Plain Naan",
+      "aliases": ["naan bread", "tandoori naan"],
+      "category": "bread",
+      "cuisine": "indian",
+      "description": "Leavened flatbread baked in tandoor"
+    },
+    "NAAN_BUTTER": {
+      "display_name": "Butter Naan",
+      "aliases": ["makhan naan"],
+      "category": "bread",
+      "cuisine": "indian",
+      "description": "Naan brushed with butter"
+    },
+    "NAAN_GARLIC": {
+      "display_name": "Garlic Naan",
+      "aliases": ["lehsun naan"],
+      "category": "bread",
+      "cuisine": "indian",
+      "description": "Naan topped with garlic"
+    },
+    "PARATHA_PLAIN": {
+      "display_name": "Plain Paratha",
+      "aliases": ["lachha paratha", "layered paratha"],
+      "category": "bread",
+      "cuisine": "indian",
+      "description": "Layered whole wheat flatbread"
+    },
+    "PARATHA_ALOO": {
+      "display_name": "Aloo Paratha",
+      "aliases": ["potato paratha", "stuffed paratha"],
+      "category": "bread",
+      "cuisine": "indian",
+      "description": "Wheat flatbread stuffed with spiced potato"
+    },
+    "PURI": {
+      "display_name": "Puri",
+      "aliases": ["poori", "deep fried bread"],
+      "category": "bread",
+      "cuisine": "indian",
+      "description": "Deep-fried puffed bread"
+    },
+    "CHICKEN_CURRY": {
+      "display_name": "Chicken Curry",
+      "aliases": ["murgh curry", "chicken gravy"],
+      "category": "curry",
+      "cuisine": "indian",
+      "description": "Chicken in spiced gravy"
+    },
+    "BUTTER_CHICKEN": {
+      "display_name": "Butter Chicken",
+      "aliases": ["murgh makhani", "chicken makhani"],
+      "category": "curry",
+      "cuisine": "indian",
+      "description": "Chicken in creamy tomato butter sauce"
+    },
+    "CHICKEN_TIKKA_MASALA": {
+      "display_name": "Chicken Tikka Masala",
+      "aliases": ["tikka masala", "chicken tikka curry"],
+      "category": "curry",
+      "cuisine": "indian",
+      "description": "Grilled chicken in spiced tomato sauce"
+    },
+    "CHICKEN_KORMA": {
+      "display_name": "Chicken Korma",
+      "aliases": ["murgh korma", "chicken kurma"],
+      "category": "curry",
+      "cuisine": "indian",
+      "description": "Chicken in mild creamy sauce"
+    },
+    "PALAK_PANEER": {
+      "display_name": "Palak Paneer",
+      "aliases": ["spinach paneer", "saag paneer"],
+      "category": "curry",
+      "cuisine": "indian",
+      "description": "Cottage cheese in spinach gravy"
+    },
+    "PANEER_BUTTER_MASALA": {
+      "display_name": "Paneer Butter Masala",
+      "aliases": ["paneer makhani", "butter paneer"],
+      "category": "curry",
+      "cuisine": "indian",
+      "description": "Cottage cheese in creamy tomato sauce"
+    },
+    "PANEER_TIKKA_MASALA": {
+      "display_name": "Paneer Tikka Masala",
+      "aliases": ["paneer tikka curry"],
+      "category": "curry",
+      "cuisine": "indian",
+      "description": "Grilled paneer in spiced sauce"
+    },
+    "MATAR_PANEER": {
+      "display_name": "Matar Paneer",
+      "aliases": ["peas paneer", "mutter paneer"],
+      "category": "curry",
+      "cuisine": "indian",
+      "description": "Cottage cheese with green peas"
+    },
+    "ALOO_GOBI": {
+      "display_name": "Aloo Gobi",
+      "aliases": ["potato cauliflower", "alu gobi"],
+      "category": "curry",
+      "cuisine": "indian",
+      "description": "Potato and cauliflower curry"
+    },
+    "BHINDI_MASALA": {
+      "display_name": "Bhindi Masala",
+      "aliases": ["okra fry", "ladies finger curry"],
+      "category": "curry",
+      "cuisine": "indian",
+      "description": "Spiced okra stir-fry"
+    },
+    "BAINGAN_BHARTA": {
+      "display_name": "Baingan Bharta",
+      "aliases": ["eggplant mash", "brinjal bharta"],
+      "category": "curry",
+      "cuisine": "indian",
+      "description": "Mashed roasted eggplant"
+    },
+    "IDLI": {
+      "display_name": "Idli",
+      "aliases": ["steamed rice cake", "idly"],
+      "category": "breakfast",
+      "cuisine": "indian",
+      "description": "Steamed fermented rice cakes"
+    },
+    "DOSA_PLAIN": {
+      "display_name": "Plain Dosa",
+      "aliases": ["sada dosa", "crispy dosa"],
+      "category": "breakfast",
+      "cuisine": "indian",
+      "description": "Crispy fermented rice crepe"
+    },
+    "DOSA_MASALA": {
+      "display_name": "Masala Dosa",
+      "aliases": ["potato dosa"],
+      "category": "breakfast",
+      "cuisine": "indian",
+      "description": "Dosa filled with spiced potato"
+    },
+    "POHA": {
+      "display_name": "Poha",
+      "aliases": ["flattened rice", "aval"],
+      "category": "breakfast",
+      "cuisine": "indian",
+      "description": "Flattened rice with spices"
+    },
+    "UPMA": {
+      "display_name": "Upma",
+      "aliases": ["semolina porridge", "sooji upma"],
+      "category": "breakfast",
+      "cuisine": "indian",
+      "description": "Savory semolina porridge"
+    },
+    "SAMOSA": {
+      "display_name": "Samosa",
+      "aliases": ["samosa", "potato puff"],
+      "category": "snack",
+      "cuisine": "indian",
+      "description": "Deep-fried pastry with spiced filling"
+    },
+    "PAKORA_VEGETABLE": {
+      "display_name": "Vegetable Pakora",
+      "aliases": ["bhajia", "fritters"],
+      "category": "snack",
+      "cuisine": "indian",
+      "description": "Deep-fried vegetable fritters"
+    },
+    "VADA": {
+      "display_name": "Vada",
+      "aliases": ["medu vada", "vadai"],
+      "category": "snack",
+      "cuisine": "indian",
+      "description": "Deep-fried lentil donuts"
+    },
+    "DHOKLA": {
+      "display_name": "Dhokla",
+      "aliases": ["steamed gram flour cake"],
+      "category": "snack",
+      "cuisine": "indian",
+      "description": "Steamed fermented chickpea flour cake"
+    },
+    "KACHORI": {
+      "display_name": "Kachori",
+      "aliases": ["dal kachori", "stuffed kachori"],
+      "category": "snack",
+      "cuisine": "indian",
+      "description": "Deep-fried stuffed bread"
+    },
+    "EGG_BOILED": {
+      "display_name": "Boiled Egg",
+      "aliases": ["hard boiled egg"],
+      "category": "snack",
+      "cuisine": "universal",
+      "description": "Hard boiled chicken egg"
+    },
+    "EGG_OMELET": {
+      "display_name": "Omelet",
+      "aliases": ["omelette", "egg omelette"],
+      "category": "breakfast",
+      "cuisine": "universal",
+      "description": "Pan-fried beaten eggs"
+    },
+    "EGG_BHURJI": {
+      "display_name": "Egg Bhurji",
+      "aliases": ["scrambled eggs indian style"],
+      "category": "breakfast",
+      "cuisine": "indian",
+      "description": "Spiced scrambled eggs"
+    },
+    "GULAB_JAMUN": {
+      "display_name": "Gulab Jamun",
+      "aliases": ["gulab jamun"],
+      "category": "dessert",
+      "cuisine": "indian",
+      "description": "Deep-fried milk balls in sugar syrup"
+    },
+    "RASGULLA": {
+      "display_name": "Rasgulla",
+      "aliases": ["rosogolla", "rasgula"],
+      "category": "dessert",
+      "cuisine": "indian",
+      "description": "Spongy cottage cheese balls in syrup"
+    },
+    "KHEER": {
+      "display_name": "Kheer",
+      "aliases": ["rice pudding", "payasam"],
+      "category": "dessert",
+      "cuisine": "indian",
+      "description": "Rice pudding with milk and sugar"
+    },
+    "LADOO": {
+      "display_name": "Ladoo",
+      "aliases": ["laddoo", "laddu"],
+      "category": "dessert",
+      "cuisine": "indian",
+      "description": "Sweet ball-shaped dessert"
+    }
+  },
+  "portion_multipliers": {
+    "small": 0.75,
+    "medium": 1.0,
+    "large": 1.3
+  },
+  "confidence_threshold": 0.6,
+  "notes": {
+    "taxonomy_rules": [
+      "dish_id must be uppercase snake_case",
+      "Never delete or rename existing dish_ids",
+      "Only add new dishes or update aliases",
+      "Keep display_name user-friendly",
+      "Aliases should include common misspellings and variations"
+    ],
+    "backend_usage": "This file is the source of truth for dish IDs shared between backend and all client apps"
+  }
+}

@@ -38,6 +38,11 @@ func main() {
 		&models.WorkoutPlan{},
 		&models.WorkoutPlanDay{},
 		&models.ScheduledWorkout{},
+		// Offline Nutrition tables
+		&models.DishMaster{},
+		&models.DishNutritionMaster{},
+		&models.UserCorrection{},
+		&models.ModelVersion{},
 	)
 
 	if err != nil {

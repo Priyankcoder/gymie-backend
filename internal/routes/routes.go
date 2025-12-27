@@ -51,6 +51,7 @@ func SetupRouter(services *service.Services, cfg *config.Config) *gin.Engine {
 		nutritionHandler := handlers.NewNutritionHandler(services.Nutrition)
 		progressHandler := handlers.NewProgressHandler(services.Progress)
 		workoutPlanHandler := handlers.NewWorkoutPlanHandler(services.WorkoutPlan)
+		offlineNutritionHandler := handlers.NewOfflineNutritionHandler(services.OfflineNutrition)
 
 		// Public routes (no authentication required)
 		auth := v1.Group("/auth")
@@ -144,6 +145,22 @@ func SetupRouter(services *service.Services, cfg *config.Config) *gin.Engine {
 				scheduledWorkouts.DELETE("/:id", workoutPlanHandler.DeleteScheduled)
 				scheduledWorkouts.POST("/generate", workoutPlanHandler.GenerateScheduled)
 				scheduledWorkouts.DELETE("/plan/:plan_id", workoutPlanHandler.ClearPlanSchedule)
+			}
+
+			// Offline Nutrition Sync routes
+			sync := protected.Group("/sync")
+			{
+				// Correction sync
+				sync.POST("/corrections", offlineNutritionHandler.SyncCorrections)
+				sync.GET("/corrections/stats", offlineNutritionHandler.GetCorrectionStats)
+
+				// Model version management
+				sync.GET("/model-versions", offlineNutritionHandler.GetModelVersions)
+				sync.GET("/nutrition-db", offlineNutritionHandler.DownloadNutritionDB)
+
+				// Dish search and lookup
+				sync.GET("/dishes/search", offlineNutritionHandler.SearchDishes)
+				sync.GET("/dishes/:dish_id", offlineNutritionHandler.GetDishByID)
 			}
 		}
 	}
