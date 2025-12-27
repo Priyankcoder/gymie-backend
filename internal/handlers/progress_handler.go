@@ -22,7 +22,96 @@ func NewProgressHandler(progressService service.ProgressService) *ProgressHandle
 	}
 }
 
-// CreateProgressPhoto creates a new progress photo
+// UploadProgressPhoto uploads a new progress photo
+// @Summary Upload progress photo
+// @Description Upload a new progress photo with image file
+// @Tags progress
+// @Accept multipart/form-data
+// @Produce json
+// @Security Bearer
+// @Param photo formData file true "Progress photo image"
+// @Param date formData string true "Date (ISO 8601 format)"
+// @Param notes formData string false "Optional notes"
+// @Param weight formData number false "Optional weight in kg"
+// @Success 201 {object} models.SuccessResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Router /progress/photos [post]
+func (h *ProgressHandler) UploadProgressPhoto(c *gin.Context) {
+	userID, _ := middleware.GetUserID(c)
+
+	// Get the uploaded file
+	file, err := c.FormFile("photo")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"validation_error",
+			"Photo file is required",
+			err.Error(),
+		))
+		return
+	}
+
+	// Validate file type
+	if !isValidImageType(file.Header.Get("Content-Type")) {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"validation_error",
+			"Invalid file type. Only JPEG, PNG, and WebP images are allowed",
+			nil,
+		))
+		return
+	}
+
+	// Validate file size (max 10MB)
+	const maxSize = 10 << 20 // 10MB
+	if file.Size > maxSize {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"validation_error",
+			"File size exceeds maximum limit of 10MB",
+			nil,
+		))
+		return
+	}
+
+	// Parse form data
+	dateStr := c.PostForm("date")
+	notes := c.PostForm("notes")
+	
+	photoDate, err := time.Parse(time.RFC3339, dateStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"validation_error",
+			"Invalid date format. Use ISO 8601 format (e.g., 2024-12-26T09:00:00Z)",
+			err.Error(),
+		))
+		return
+	}
+
+	// Optional weight
+	var weight *float64
+	if weightStr := c.PostForm("weight"); weightStr != "" {
+		w, err := strconv.ParseFloat(weightStr, 64)
+		if err == nil {
+			weight = &w
+		}
+	}
+
+	// Upload file and create photo record
+	photo, err := h.progressService.UploadProgressPhoto(c.Request.Context(), userID, file, photoDate, weight, notes)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.NewErrorResponse(
+			"upload_failed",
+			err.Error(),
+			nil,
+		))
+		return
+	}
+
+	c.JSON(http.StatusCreated, models.NewSuccessResponse(
+		"Progress photo uploaded successfully",
+		photo,
+	))
+}
+
+// CreateProgressPhoto creates a new progress photo (JSON API - for metadata only)
 // @Summary Create progress photo
 // @Description Create a new progress photo entry
 // @Tags progress
@@ -60,6 +149,17 @@ func (h *ProgressHandler) CreateProgressPhoto(c *gin.Context) {
 		"Progress photo created successfully",
 		photo,
 	))
+}
+
+// Helper function to validate image type
+func isValidImageType(contentType string) bool {
+	validTypes := map[string]bool{
+		"image/jpeg": true,
+		"image/jpg":  true,
+		"image/png":  true,
+		"image/webp": true,
+	}
+	return validTypes[contentType]
 }
 
 // GetProgressPhotos lists progress photos

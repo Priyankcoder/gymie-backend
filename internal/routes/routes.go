@@ -38,6 +38,9 @@ func SetupRouter(services *service.Services, cfg *config.Config) *gin.Engine {
 		))
 	})
 
+	// Static file serving for uploaded files
+	router.Static("/uploads", cfg.StorageBasePath)
+
 	// API v1 routes
 	v1 := router.Group("/v1")
 	{
@@ -101,7 +104,7 @@ func SetupRouter(services *service.Services, cfg *config.Config) *gin.Engine {
 			progress := protected.Group("/progress")
 			{
 				// Progress photos
-				progress.POST("/photos", progressHandler.CreateProgressPhoto)
+				progress.POST("/photos", progressHandler.UploadProgressPhoto)
 				progress.GET("/photos", progressHandler.GetProgressPhotos)
 				progress.PUT("/photos/:id", progressHandler.UpdateProgressPhoto)
 				progress.DELETE("/photos/:id", progressHandler.DeleteProgressPhoto)

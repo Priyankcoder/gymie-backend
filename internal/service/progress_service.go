@@ -4,8 +4,14 @@ package service
 import (
 	"context"
 	"fmt"
+	"io"
+	"mime/multipart"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/yourusername/gymie-backend/internal/config"
 	"github.com/yourusername/gymie-backend/internal/models"
 	"github.com/yourusername/gymie-backend/internal/repository"
@@ -15,6 +21,7 @@ import (
 type ProgressService interface {
 	// Progress Photos
 	CreateProgressPhoto(ctx context.Context, userID uint, req *models.ProgressPhotoCreateRequest) (*models.ProgressPhoto, error)
+	UploadProgressPhoto(ctx context.Context, userID uint, file *multipart.FileHeader, date time.Time, weight *float64, notes string) (*models.ProgressPhoto, error)
 	GetProgressPhotoByID(ctx context.Context, id uint, userID uint) (*models.ProgressPhoto, error)
 	GetProgressPhotos(ctx context.Context, userID uint, query *models.ListQuery) ([]models.ProgressPhoto, int64, error)
 	UpdateProgressPhoto(ctx context.Context, id uint, userID uint, req *models.ProgressPhotoUpdateRequest) (*models.ProgressPhoto, error)
@@ -42,6 +49,61 @@ func NewProgressService(progressRepo repository.ProgressRepository, cfg *config.
 		progressRepo: progressRepo,
 		cfg:          cfg,
 	}
+}
+
+// UploadProgressPhoto uploads and creates a new progress photo
+func (s *progressService) UploadProgressPhoto(ctx context.Context, userID uint, file *multipart.FileHeader, date time.Time, weight *float64, notes string) (*models.ProgressPhoto, error) {
+	// Generate unique filename
+	ext := filepath.Ext(file.Filename)
+	filename := fmt.Sprintf("%s%s", uuid.New().String(), ext)
+	
+	// Create upload directory if it doesn't exist
+	uploadDir := filepath.Join(s.cfg.StorageBasePath, "progress_photos", fmt.Sprintf("%d", userID))
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create upload directory: %w", err)
+	}
+
+	// Full file path
+	filePath := filepath.Join(uploadDir, filename)
+
+	// Open the uploaded file
+	src, err := file.Open()
+	if err != nil {
+		return nil, fmt.Errorf("failed to open uploaded file: %w", err)
+	}
+	defer src.Close()
+
+	// Create destination file
+	dst, err := os.Create(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create destination file: %w", err)
+	}
+	defer dst.Close()
+
+	// Copy file content
+	if _, err := io.Copy(dst, src); err != nil {
+		return nil, fmt.Errorf("failed to save file: %w", err)
+	}
+
+	// Generate public URL
+	imageURL := fmt.Sprintf("%s/progress_photos/%d/%s", s.cfg.StoragePublicURL, userID, filename)
+
+	// Create database record
+	photo := &models.ProgressPhoto{
+		UserID:   userID,
+		Date:     date,
+		ImageURL: imageURL,
+		Weight:   weight,
+		Notes:    notes,
+	}
+
+	if err := s.progressRepo.CreateProgressPhoto(ctx, photo); err != nil {
+		// Clean up file if database insert fails
+		os.Remove(filePath)
+		return nil, fmt.Errorf("failed to create progress photo record: %w", err)
+	}
+
+	return photo, nil
 }
 
 // CreateProgressPhoto creates a new progress photo
@@ -105,9 +167,29 @@ func (s *progressService) UpdateProgressPhoto(ctx context.Context, id uint, user
 
 // DeleteProgressPhoto deletes a progress photo
 func (s *progressService) DeleteProgressPhoto(ctx context.Context, id uint, userID uint) error {
+	// Get photo to retrieve file path
+	photo, err := s.progressRepo.GetProgressPhotoByID(ctx, id, userID)
+	if err != nil {
+		return fmt.Errorf("failed to get progress photo: %w", err)
+	}
+
+	// Delete from database
 	if err := s.progressRepo.DeleteProgressPhoto(ctx, id, userID); err != nil {
 		return fmt.Errorf("failed to delete progress photo: %w", err)
 	}
+
+	// Delete file from storage
+	if photo.ImageURL != "" {
+		// Extract filename from URL
+		parts := strings.Split(photo.ImageURL, "/")
+		if len(parts) >= 3 {
+			filename := parts[len(parts)-1]
+			filePath := filepath.Join(s.cfg.StorageBasePath, "progress_photos", fmt.Sprintf("%d", userID), filename)
+			// Ignore error if file doesn't exist
+			os.Remove(filePath)
+		}
+	}
+
 	return nil
 }
 

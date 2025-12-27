@@ -39,6 +39,7 @@ type Config struct {
 	StorageBucket         string
 	StorageRegion         string
 	StoragePublicURL      string
+	StorageBasePath       string // Local file storage base path
 	StoragePresignExpiry  int // in minutes
 
 	// Rate Limiting
@@ -83,7 +84,8 @@ func Load() (*Config, error) {
 		StorageSecretKey:     getEnv("STORAGE_SECRET_KEY", ""),
 		StorageBucket:        getEnv("STORAGE_BUCKET", "gymie-dev"),
 		StorageRegion:        getEnv("STORAGE_REGION", "auto"),
-		StoragePublicURL:     getEnv("STORAGE_PUBLIC_URL", ""),
+		StoragePublicURL:     getEnv("STORAGE_PUBLIC_URL", "http://localhost:8080/uploads"),
+		StorageBasePath:      getEnv("STORAGE_BASE_PATH", "./uploads"),
 		StoragePresignExpiry: getEnvAsInt("STORAGE_PRESIGN_EXPIRY", 15), // 15 minutes
 
 		// Rate Limiting
