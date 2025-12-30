@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2025-12-27T17:32:02Z",
+  "assets": {
+    "nutrition_db": {
+      "version": "1.0.0",
+      "file": "databases/nutrition_v1.0.0.db",
+      "checksum": "sha256:52108c9513c7e2e908c0fe5743678da646e99c51d654dc12938f27a999c88f4d",
+      "size_bytes": 69632
+    }
+  }
+}

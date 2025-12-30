@@ -56,3 +56,5 @@ temp/
 # Coverage reports
 coverage.out
 coverage.html
+
+coreml-env
