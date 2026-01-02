@@ -57,8 +57,10 @@ func (s *userService) Update(ctx context.Context, userID uint, req *models.UserU
 		return nil, fmt.Errorf("failed to update user: %w", err)
 	}
 
-	// Update profile if provided
-	if req.Height != nil || req.Weight != nil || req.Age != nil || req.Gender != nil || req.Goal != nil {
+	// Update profile if any profile field is provided
+	if req.DisplayName != nil || req.ProfilePicture != nil || req.Bio != nil || 
+	   req.Height != nil || req.Weight != nil || req.Age != nil || 
+	   req.Gender != nil || req.Goal != nil {
 		profile := user.Profile
 		if profile == nil {
 			profile = &models.UserProfile{
@@ -66,6 +68,18 @@ func (s *userService) Update(ctx context.Context, userID uint, req *models.UserU
 			}
 		}
 
+		// Update new profile fields
+		if req.DisplayName != nil {
+			profile.DisplayName = req.DisplayName
+		}
+		if req.ProfilePicture != nil {
+			profile.ProfilePicture = req.ProfilePicture
+		}
+		if req.Bio != nil {
+			profile.Bio = req.Bio
+		}
+
+		// Update existing profile fields
 		if req.Height != nil {
 			profile.Height = req.Height
 		}
