@@ -1,0 +1,46 @@
+
+# Render deployment configuration for Gymie Backend
+# Deploy with: render deploy
+
+databases:
+  - name: gymie-db
+    plan: free
+    databaseName: gymie
+    user: gymie_user
+    region: singapore
+    ipAllowList: []
+
+services:
+  - type: web
+    name: gymie-api
+    runtime: docker
+    region: singapore
+    plan: free
+    branch: main
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: ENVIRONMENT
+        value: production
+      - key: CORS_ALLOWED_ORIGINS
+        value: "*"
+      - key: JWT_EXPIRATION
+        value: 24
+      - key: RATE_LIMIT_ENABLED
+        value: "true"
+      - key: RATE_LIMIT_REQUESTS
+        value: "100"
+      - key: RATE_LIMIT_WINDOW
+        value: "60"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gymie-db
+          property: connectionString
+      - key: REDIS_URL
+        sync: false  # Set this manually from Upstash
+      - key: JWT_SECRET
+        generateValue: true  # Auto-generates secure secret
+    healthCheckPath: /health
+    autoDeploy: true
