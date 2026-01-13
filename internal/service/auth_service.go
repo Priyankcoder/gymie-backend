@@ -17,6 +17,7 @@ import (
 type AuthService interface {
 	Register(ctx context.Context, req *models.UserRegisterRequest) (*models.AuthResponse, error)
 	Login(ctx context.Context, req *models.UserLoginRequest) (*models.AuthResponse, error)
+	LoginWithGoogle(ctx context.Context, req *models.GoogleSignInRequest) (*models.AuthResponse, error)
 	ValidateToken(tokenString string) (*utils.Claims, error)
 }
 
@@ -101,6 +102,89 @@ func (s *authService) Login(ctx context.Context, req *models.UserLoginRequest) (
 	}
 
 	// Generate token
+	token, err := utils.GenerateToken(user.ID, user.Email, s.cfg.JWTSecret, s.cfg.JWTExpiration)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate token: %w", err)
+	}
+
+	return &models.AuthResponse{
+		Token: token,
+		User:  user.ToResponse(),
+	}, nil
+}
+
+// LoginWithGoogle authenticates a user via Google Sign-In
+func (s *authService) LoginWithGoogle(ctx context.Context, req *models.GoogleSignInRequest) (*models.AuthResponse, error) {
+	// Verify Google ID token
+	tokenInfo, err := utils.VerifyGoogleIDToken(ctx, req.IDToken)
+	if err != nil {
+		return nil, fmt.Errorf("failed to verify Google token: %w", err)
+	}
+
+	// Use email from token (most reliable) or fallback to request
+	email := tokenInfo.Email
+	if email == "" && req.Email != nil {
+		email = *req.Email
+	}
+	if email == "" {
+		return nil, fmt.Errorf("email is required")
+	}
+
+	// Check if user exists
+	user, err := s.userRepo.GetByEmail(ctx, email)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("failed to check existing user: %w", err)
+	}
+
+	// If user doesn't exist, create new account
+	if user == nil || errors.Is(err, gorm.ErrRecordNotFound) {
+		// Use name from token or request
+		name := tokenInfo.Name
+		if name == "" && req.Name != nil {
+			name = *req.Name
+		}
+		if name == "" {
+			name = tokenInfo.GivenName + " " + tokenInfo.FamilyName
+		}
+		if name == "" {
+			name = email // Fallback to email if no name available
+		}
+
+		// Create user with a random password (won't be used for Google sign-in)
+		randomPassword, err := utils.GenerateRandomPassword(32)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate password: %w", err)
+		}
+
+		hashedPassword, err := utils.HashPassword(randomPassword)
+		if err != nil {
+			return nil, fmt.Errorf("failed to hash password: %w", err)
+		}
+
+		user = &models.User{
+			Email:    email,
+			Password: hashedPassword,
+			Name:     name,
+		}
+
+		if err := s.userRepo.Create(ctx, user); err != nil {
+			return nil, fmt.Errorf("failed to create user: %w", err)
+		}
+
+		// Create user profile with Google profile picture if available
+		profilePicture := tokenInfo.Picture
+		profile := &models.UserProfile{
+			UserID:         user.ID,
+			ProfilePicture: &profilePicture,
+		}
+		if err := s.userRepo.UpdateProfile(ctx, profile); err != nil {
+			return nil, fmt.Errorf("failed to create user profile: %w", err)
+		}
+
+		user.Profile = profile
+	}
+
+	// Generate JWT token
 	token, err := utils.GenerateToken(user.ID, user.Email, s.cfg.JWTSecret, s.cfg.JWTExpiration)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate token: %w", err)

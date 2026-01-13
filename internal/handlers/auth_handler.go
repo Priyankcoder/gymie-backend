@@ -94,6 +94,44 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	))
 }
 
+// LoginWithGoogle handles Google Sign-In authentication
+// @Summary Google Sign-In
+// @Description Authenticate user with Google ID token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body models.GoogleSignInRequest true "Google sign-in details"
+// @Success 200 {object} models.SuccessResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 401 {object} models.ErrorResponse
+// @Router /auth/google [post]
+func (h *AuthHandler) LoginWithGoogle(c *gin.Context) {
+	var req models.GoogleSignInRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"validation_error",
+			"Invalid request body",
+			err.Error(),
+		))
+		return
+	}
+
+	authResponse, err := h.authService.LoginWithGoogle(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.NewErrorResponse(
+			"google_signin_failed",
+			err.Error(),
+			nil,
+		))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.NewSuccessResponse(
+		"Google sign-in successful",
+		authResponse,
+	))
+}
+
 // Me returns the current user's profile
 // @Summary Get current user
 // @Description Get the authenticated user's profile
