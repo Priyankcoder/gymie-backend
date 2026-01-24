@@ -1,7 +1,9 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
 
-name: Go
+# Backend Build and Test Workflow
+# Runs on all pushes to main and pull requests
+# This workflow will be required to pass before merging PRs
+
+name: Backend CI
 
 on:
   push:
@@ -10,19 +12,70 @@ on:
     branches: [ "main" ]
 
 jobs:
-
-  build:
+  build-and-test:
+    name: Build and Test Backend
     runs-on: ubuntu-latest
+    
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.20'
+        go-version: '1.21'  # Update to match your Go version
+        cache-dependency-path: go.sum  # Cache Go modules
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: Run go fmt
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "The following files are not formatted:"
+          gofmt -s -l .
+          exit 1
+        fi
+
+    - name: Run go vet
+      run: go vet ./...
 
     - name: Build
       run: go build -v ./...
 
-    - name: Test
-      run: go test -v ./...
+    - name: Build API binary
+      run: go build -o api cmd/api/main.go
+
+    - name: Run tests
+      run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+
+    - name: Upload coverage to Codecov (optional)
+      if: success()
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.txt
+        flags: backend
+        name: backend-coverage
+      continue-on-error: true  # Don't fail if codecov upload fails
+
+  lint:
+    name: Lint Backend Code
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Run golangci-lint
+      uses: golangci/golangci-lint-action@v3
+      with:
+        version: latest
+        args: --timeout=5m
