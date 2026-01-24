@@ -17,6 +17,11 @@ type User struct {
 	UpdatedAt time.Time      `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
+	// Email verification
+	EmailVerified              bool      `gorm:"default:false" json:"emailVerified"`
+	VerificationToken          string    `gorm:"index:idx_users_verification_token;unique" json:"-"`
+	VerificationTokenExpiresAt time.Time `json:"-"`
+
 	// Profile information
 	Profile *UserProfile `gorm:"foreignKey:UserID" json:"profile,omitempty"`
 
@@ -72,23 +77,25 @@ type UserUpdateRequest struct {
 
 // UserResponse represents the user response (without sensitive data)
 type UserResponse struct {
-	ID        uint          `json:"id"`
-	Email     string        `json:"email"`
-	Name      string        `json:"name"`
-	Profile   *UserProfile  `json:"profile,omitempty"`
-	CreatedAt time.Time     `json:"createdAt"`
-	UpdatedAt time.Time     `json:"updatedAt"`
+	ID            uint          `json:"id"`
+	Email         string        `json:"email"`
+	Name          string        `json:"name"`
+	EmailVerified bool          `json:"emailVerified"`
+	Profile       *UserProfile  `json:"profile,omitempty"`
+	CreatedAt     time.Time     `json:"createdAt"`
+	UpdatedAt     time.Time     `json:"updatedAt"`
 }
 
 // ToResponse converts User to UserResponse
 func (u *User) ToResponse() *UserResponse {
 	return &UserResponse{
-		ID:        u.ID,
-		Email:     u.Email,
-		Name:      u.Name,
-		Profile:   u.Profile,
-		CreatedAt: u.CreatedAt,
-		UpdatedAt: u.UpdatedAt,
+		ID:            u.ID,
+		Email:         u.Email,
+		Name:          u.Name,
+		EmailVerified: u.EmailVerified,
+		Profile:       u.Profile,
+		CreatedAt:     u.CreatedAt,
+		UpdatedAt:     u.UpdatedAt,
 	}
 }
 
