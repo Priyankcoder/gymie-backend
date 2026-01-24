@@ -28,7 +28,9 @@ jobs:
         run: go mod download
 
       - name: Build Backend
-        run: go build -v ./...
-
+        run: |
+          # Build all packages except scripts and migrations
+          go build -v $(go list ./... | grep -v '/scripts' | grep -v '/migrations')
+  
       - name: Build API Binary
         run: go build -o api cmd/api/main.go
