@@ -48,6 +48,12 @@ type Config struct {
 
 	// CORS
 	CORSAllowedOrigins []string
+
+	// SendGrid Email Configuration (REQUIRED)
+	SendGridAPIKey string
+	FromEmail      string
+	FromName       string
+	FrontendURL    string
 }
 
 // Load reads configuration from environment variables
@@ -96,6 +102,12 @@ func Load() (*Config, error) {
 		CORSAllowedOrigins: []string{
 			getEnv("CORS_ALLOWED_ORIGINS", "*"),
 		},
+
+		// SendGrid Email Configuration (REQUIRED)
+		SendGridAPIKey: getEnv("SENDGRID_API_KEY", ""),
+		FromEmail:      getEnv("FROM_EMAIL", "noreply@gymie.com"),
+		FromName:       getEnv("FROM_NAME", "Gymie"),
+		FrontendURL:    getEnv("FRONTEND_URL", "http://localhost:3000"),
 	}
 
 	// Validate required fields

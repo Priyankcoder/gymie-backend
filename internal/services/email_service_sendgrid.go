@@ -1,75 +1,72 @@
+
 package services
 
 import (
-	"crypto/tls"
 	"fmt"
-	"os"
+	"log"
 
-	"gopkg.in/mail.v2"
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"github.com/yourusername/gymie-backend/internal/config"
 )
 
-type EmailService struct {
-	smtpHost     string
-	smtpPort     int
-	smtpUsername string
-	smtpPassword string
-	fromEmail    string
-	fromName     string
+type SendGridEmailService struct {
+	apiKey      string
+	fromEmail   string
+	fromName    string
+	frontendURL string
 }
 
-func NewEmailService() *EmailService {
-	es := &EmailService{
-		smtpHost:     getEnv("SMTP_HOST", "smtp.gmail.com"),
-		smtpPort:     getEnvInt("SMTP_PORT", 587),
-		smtpUsername: getEnv("SMTP_USERNAME", ""),
-		smtpPassword: getEnv("SMTP_PASSWORD", ""),
-		fromEmail:    getEnv("FROM_EMAIL", "noreply@gymie.com"),
-		fromName:     getEnv("FROM_NAME", "Gymie"),
+func NewSendGridEmailService(cfg *config.Config) *SendGridEmailService {
+	// Validate API key
+	if cfg.SendGridAPIKey == "" {
+		log.Println("❌ CRITICAL ERROR: SendGrid API key is empty!")
+		panic("SENDGRID_API_KEY environment variable is required")
 	}
-
-	// Debug logging
-	fmt.Printf("\n=== EMAIL SERVICE INITIALIZED ===\n")
-	fmt.Printf("SMTP Host: %s\n", es.smtpHost)
-	fmt.Printf("SMTP Port: %d\n", es.smtpPort)
-	fmt.Printf("SMTP Username: %s\n", es.smtpUsername)
-	fmt.Printf("SMTP Password: %s\n", maskPassword(es.smtpPassword))
-	fmt.Printf("From Email: %s\n", es.fromEmail)
-	fmt.Printf("From Name: %s\n", es.fromName)
-	fmt.Printf("================================\n\n")
-
-	return es
+	
+	if len(cfg.SendGridAPIKey) < 20 {
+		log.Printf("❌ CRITICAL ERROR: SendGrid API key is too short (%d chars)\n", len(cfg.SendGridAPIKey))
+		log.Println("   Expected format: SG.xxxxx... (typically 69 characters)")
+		panic("Invalid SENDGRID_API_KEY - key appears to be incomplete")
+	}
+	
+	service := &SendGridEmailService{
+		apiKey:      cfg.SendGridAPIKey,
+		fromEmail:   cfg.FromEmail,
+		fromName:    cfg.FromName,
+		frontendURL: cfg.FrontendURL,
+	}
+	
+	log.Println("=== SENDGRID EMAIL SERVICE INITIALIZED ===")
+	// Safe logging - only show first 10 and last 4 chars
+	maskedKey := cfg.SendGridAPIKey[:min(10, len(cfg.SendGridAPIKey))] + "****"
+	if len(cfg.SendGridAPIKey) > 4 {
+		maskedKey += cfg.SendGridAPIKey[len(cfg.SendGridAPIKey)-4:]
+	}
+	log.Printf("API Key: %s (%d chars)\n", maskedKey, len(cfg.SendGridAPIKey))
+	log.Printf("From: %s <%s>\n", service.fromName, service.fromEmail)
+	log.Printf("Frontend URL: %s\n", service.frontendURL)
+	log.Println("==========================================")
+	
+	return service
 }
 
-func maskPassword(password string) string {
-	if password == "" {
-		return "(empty)"
-	}
-	if len(password) <= 4 {
-		return "****"
-	}
-	return password[:2] + "****" + password[len(password)-2:]
-}
-
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
-}
-
-func getEnvInt(key string, defaultValue int) int {
-	if value := os.Getenv(key); value != "" {
-		var intValue int
-		fmt.Sscanf(value, "%d", &intValue)
-		return intValue
-	}
-	return defaultValue
-}
-
-func (s *EmailService) SendVerificationEmail(toEmail, userName, verificationLink string) error {
+func (s *SendGridEmailService) SendVerificationEmail(toEmail, userName, verificationToken string) error {
+	log.Printf("\n╔══════════════════════════════════════════════════════════════╗\n")
+	log.Printf("║     PREPARING VERIFICATION EMAIL - SendGrid Service         ║\n")
+	log.Printf("╚══════════════════════════════════════════════════════════════╝\n")
+	log.Printf("[PREPARE] Building verification email...\n")
+	log.Printf("  ├─ To: %s\n", toEmail)
+	log.Printf("  ├─ User Name: %s\n", userName)
+	log.Printf("  ├─ Token: %s\n", verificationToken)
+	log.Printf("  ├─ Frontend URL: %s\n", s.frontendURL)
+	
+	verificationLink := fmt.Sprintf("%s/verify-email?token=%s", s.frontendURL, verificationToken)
+	log.Printf("  └─ Verification Link: %s\n", verificationLink)
+	
 	subject := "Verify Your Gymie Account"
-
-	body := fmt.Sprintf(`
+	
+	htmlContent := fmt.Sprintf(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -152,47 +149,41 @@ func (s *EmailService) SendVerificationEmail(toEmail, userName, verificationLink
 </body>
 </html>
 	`, userName, verificationLink, verificationLink, verificationLink)
+	
+	plainTextContent := fmt.Sprintf(`
+Welcome to Gymie, %s!
 
-	return s.sendEmail(toEmail, subject, body)
+Thank you for signing up! We're excited to help you on your fitness journey.
+
+To get started, please verify your email address by visiting this link:
+%s
+
+This verification link will expire in 24 hours.
+
+If you didn't create an account with Gymie, you can safely ignore this email.
+
+© 2024 Gymie. All rights reserved.
+	`, userName, verificationLink)
+	
+	return s.sendEmail(toEmail, subject, plainTextContent, htmlContent)
 }
 
-func (s *EmailService) sendEmail(to, subject, body string) error {
-	fmt.Printf("\n=== SENDING EMAIL ===\n")
-	fmt.Printf("To: %s\n", to)
-	fmt.Printf("Subject: %s\n", subject)
-	fmt.Printf("From: %s <%s>\n", s.fromName, s.fromEmail)
-	fmt.Printf("SMTP: %s:%d\n", s.smtpHost, s.smtpPort)
-	fmt.Printf("==================\n")
-
-	m := mail.NewMessage()
-	m.SetHeader("From", fmt.Sprintf("%s <%s>", s.fromName, s.fromEmail))
-	m.SetHeader("To", to)
-	m.SetHeader("Subject", subject)
-	m.SetBody("text/html", body)
-
-	d := mail.NewDialer(s.smtpHost, s.smtpPort, s.smtpUsername, s.smtpPassword)
-
-	// Enable TLS with proper ServerName
-	d.TLSConfig = &tls.Config{
-		ServerName:         s.smtpHost,
-		InsecureSkipVerify: false,
-	}
-
-	fmt.Printf("Attempting to send email...\n")
-	err := d.DialAndSend(m)
-	if err != nil {
-		fmt.Printf("❌ Email send failed: %v\n", err)
-		return err
-	}
-
-	fmt.Printf("✅ Email sent successfully!\n")
-	return nil
-}
-
-func (s *EmailService) SendPasswordResetEmail(toEmail, userName, resetLink string) error {
+func (s *SendGridEmailService) SendPasswordResetEmail(toEmail, userName, resetToken string) error {
+	log.Printf("\n╔══════════════════════════════════════════════════════════════╗\n")
+	log.Printf("║     PREPARING PASSWORD RESET EMAIL - SendGrid Service       ║\n")
+	log.Printf("╚══════════════════════════════════════════════════════════════╝\n")
+	log.Printf("[PREPARE] Building password reset email...\n")
+	log.Printf("  ├─ To: %s\n", toEmail)
+	log.Printf("  ├─ User Name: %s\n", userName)
+	log.Printf("  ├─ Token: %s\n", resetToken)
+	log.Printf("  ├─ Frontend URL: %s\n", s.frontendURL)
+	
+	resetLink := fmt.Sprintf("%s/reset-password?token=%s", s.frontendURL, resetToken)
+	log.Printf("  └─ Reset Link: %s\n", resetLink)
+	
 	subject := "Reset Your Gymie Password"
-
-	body := fmt.Sprintf(`
+	
+	htmlContent := fmt.Sprintf(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -255,6 +246,120 @@ func (s *EmailService) SendPasswordResetEmail(toEmail, userName, resetLink strin
 </body>
 </html>
 	`, userName, resetLink)
+	
+	plainTextContent := fmt.Sprintf(`
+Hi %s,
 
-	return s.sendEmail(toEmail, subject, body)
+We received a request to reset your Gymie password.
+
+To reset your password, visit this link:
+%s
+
+This link will expire in 1 hour.
+
+If you didn't request a password reset, please ignore this email or contact support if you have concerns.
+
+© 2024 Gymie. All rights reserved.
+	`, userName, resetLink)
+	
+	return s.sendEmail(toEmail, subject, plainTextContent, htmlContent)
+}
+
+func (s *SendGridEmailService) sendEmail(to, subject, plainTextContent, htmlContent string) error {
+	log.Printf("\n╔══════════════════════════════════════════════════════════════╗\n")
+	log.Printf("║          SENDGRID EMAIL SENDING - DEBUG LOG                  ║\n")
+	log.Printf("╚══════════════════════════════════════════════════════════════╝\n")
+	
+	// Step 1: Validate configuration
+	log.Printf("[STEP 1] Validating SendGrid configuration...\n")
+	log.Printf("  ├─ API Key Length: %d characters\n", len(s.apiKey))
+	log.Printf("  ├─ API Key Prefix: %s****\n", s.apiKey[:min(10, len(s.apiKey))])
+	log.Printf("  ├─ From Email: %s\n", s.fromEmail)
+	log.Printf("  ├─ From Name: %s\n", s.fromName)
+	log.Printf("  ├─ Frontend URL: %s\n", s.frontendURL)
+	log.Printf("  └─ To Email: %s\n", to)
+	
+	if s.apiKey == "" {
+		log.Printf("❌ [ERROR] SendGrid API key is empty!\n")
+		return fmt.Errorf("sendgrid API key is not configured")
+	}
+	
+	// Step 2: Create email message
+	log.Printf("\n[STEP 2] Creating email message...\n")
+	from := mail.NewEmail(s.fromName, s.fromEmail)
+	toEmail := mail.NewEmail("", to)
+	message := mail.NewSingleEmail(from, subject, toEmail, plainTextContent, htmlContent)
+	log.Printf("  ├─ From: %s <%s>\n", s.fromName, s.fromEmail)
+	log.Printf("  ├─ To: %s\n", to)
+	log.Printf("  ├─ Subject: %s\n", subject)
+	log.Printf("  ├─ Plain text length: %d bytes\n", len(plainTextContent))
+	log.Printf("  └─ HTML content length: %d bytes\n", len(htmlContent))
+	
+	// Step 3: Initialize SendGrid client
+	log.Printf("\n[STEP 3] Initializing SendGrid client...\n")
+	client := sendgrid.NewSendClient(s.apiKey)
+	log.Printf("  └─ Client created successfully\n")
+	
+	// Step 4: Send email via SendGrid API
+	log.Printf("\n[STEP 4] Sending email via SendGrid API...\n")
+	log.Printf("  ├─ Endpoint: https://api.sendgrid.com/v3/mail/send\n")
+	log.Printf("  └─ Making API request...\n")
+	
+	response, err := client.Send(message)
+	
+	// Step 5: Check for errors
+	if err != nil {
+		log.Printf("\n❌ [STEP 5] SENDGRID API ERROR\n")
+		log.Printf("  ├─ Error Type: %T\n", err)
+		log.Printf("  ├─ Error Message: %v\n", err)
+		log.Printf("  └─ This usually means:\n")
+		log.Printf("      • Network connectivity issues\n")
+		log.Printf("      • Invalid API key\n")
+		log.Printf("      • SendGrid service down\n")
+		log.Printf("      • Firewall blocking port 443\n")
+		return fmt.Errorf("sendgrid API request failed: %w", err)
+	}
+	
+	// Step 6: Check response status
+	log.Printf("\n[STEP 6] Processing SendGrid response...\n")
+	log.Printf("  ├─ Status Code: %d\n", response.StatusCode)
+	log.Printf("  ├─ Response Headers: %v\n", response.Headers)
+	
+	if response.StatusCode >= 400 {
+		log.Printf("\n❌ [ERROR] SendGrid returned error status\n")
+		log.Printf("  ├─ Status Code: %d\n", response.StatusCode)
+		log.Printf("  ├─ Response Body: %s\n", response.Body)
+		log.Printf("  └─ Common causes:\n")
+		
+		switch response.StatusCode {
+		case 400:
+			log.Printf("      • Invalid request (check email format)\n")
+		case 401:
+			log.Printf("      • Invalid API key\n")
+		case 403:
+			log.Printf("      • Forbidden (check sender verification)\n")
+		case 429:
+			log.Printf("      • Rate limit exceeded\n")
+		case 500, 502, 503:
+			log.Printf("      • SendGrid server error (try again later)\n")
+		}
+		
+		return fmt.Errorf("sendgrid error (status %d): %s", response.StatusCode, response.Body)
+	}
+	
+	// Success!
+	log.Printf("\n✅ [SUCCESS] Email sent via SendGrid!\n")
+	log.Printf("  ├─ Status Code: %d\n", response.StatusCode)
+	log.Printf("  ├─ Message ID: %v\n", response.Headers["X-Message-Id"])
+	log.Printf("  └─ Email delivered to SendGrid successfully\n")
+	log.Printf("\n═══════════════════════════════════════════════════════════════\n\n")
+	
+	return nil
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

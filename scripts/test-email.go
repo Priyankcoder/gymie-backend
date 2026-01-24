@@ -17,19 +17,46 @@ func main() {
 
 	// Load .env file
 	fmt.Println("📁 Loading .env file...")
-	err := godotenv.Load("../.env")
+	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatalf("❌ Error loading .env file: %v", err)
+		fmt.Println("⚠️  No .env file found, trying system environment variables...")
+	} else {
+		fmt.Println("✅ .env file loaded")
 	}
-	fmt.Println("✅ .env file loaded\n")
+	fmt.Println()
 
 	// Get SMTP configuration
 	host := os.Getenv("SMTP_HOST")
 	port := os.Getenv("SMTP_PORT")
 	username := os.Getenv("SMTP_USERNAME")
 	password := os.Getenv("SMTP_PASSWORD")
+	
+	// Support both SMTP_FROM (new) and FROM_EMAIL/FROM_NAME (old)
+	smtpFrom := os.Getenv("SMTP_FROM")
 	fromEmail := os.Getenv("FROM_EMAIL")
 	fromName := os.Getenv("FROM_NAME")
+	
+	// Parse SMTP_FROM if it exists (format: "Name <email@example.com>")
+	if smtpFrom != "" {
+		if strings.Contains(smtpFrom, "<") && strings.Contains(smtpFrom, ">") {
+			parts := strings.Split(smtpFrom, "<")
+			fromName = strings.TrimSpace(parts[0])
+			fromEmail = strings.TrimRight(strings.TrimSpace(parts[1]), ">")
+		} else {
+			fromEmail = smtpFrom
+			if fromName == "" {
+				fromName = "Gymie"
+			}
+		}
+	}
+	
+	// Defaults
+	if fromName == "" {
+		fromName = "Gymie"
+	}
+	if fromEmail == "" {
+		fromEmail = "noreply@gymie.com"
+	}
 
 	fmt.Println("📧 SMTP Configuration:")
 	fmt.Printf("   Host: %s\n", host)
