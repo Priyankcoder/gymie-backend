@@ -1,4 +1,3 @@
-
 package repository
 
 import (
@@ -22,14 +21,14 @@ type WorkoutPlanRepository interface {
 	Update(ctx context.Context, plan *models.WorkoutPlan) error
 	Delete(ctx context.Context, id uint, userID uint) error
 	SetActive(ctx context.Context, id uint, userID uint) error
-	
+
 	// Day operations
 	CreateDay(ctx context.Context, day *models.WorkoutPlanDay) error
 	CreateDays(ctx context.Context, days []models.WorkoutPlanDay) error
 	UpdateDay(ctx context.Context, day *models.WorkoutPlanDay) error
 	DeleteDay(ctx context.Context, id uint, planID uint) error
 	DeleteDays(ctx context.Context, planID uint) error
-	
+
 	// Scheduled workout operations
 	CreateScheduled(ctx context.Context, scheduled *models.ScheduledWorkout) error
 	GetScheduledByID(ctx context.Context, id uint, userID uint) (*models.ScheduledWorkout, error)
@@ -64,7 +63,7 @@ func (r *workoutPlanRepository) Create(ctx context.Context, plan *models.Workout
 // GetByID retrieves a workout plan by ID
 func (r *workoutPlanRepository) GetByID(ctx context.Context, id uint, userID uint) (*models.WorkoutPlan, error) {
 	cacheKey := fmt.Sprintf("plan:%d", id)
-	
+
 	// Try cache first
 	cached, err := r.redis.Get(ctx, cacheKey).Result()
 	if err == nil {
@@ -126,7 +125,7 @@ func (r *workoutPlanRepository) Update(ctx context.Context, plan *models.Workout
 	// Invalidate cache
 	cacheKey := fmt.Sprintf("plan:%d", plan.ID)
 	r.redis.Del(ctx, cacheKey)
-	
+
 	return r.db.WithContext(ctx).Save(plan).Error
 }
 
@@ -135,7 +134,7 @@ func (r *workoutPlanRepository) Delete(ctx context.Context, id uint, userID uint
 	// Invalidate cache
 	cacheKey := fmt.Sprintf("plan:%d", id)
 	r.redis.Del(ctx, cacheKey)
-	
+
 	return r.db.WithContext(ctx).
 		Where("id = ? AND user_id = ?", id, userID).
 		Delete(&models.WorkoutPlan{}).Error
@@ -150,14 +149,14 @@ func (r *workoutPlanRepository) SetActive(ctx context.Context, id uint, userID u
 			Update("is_active", false).Error; err != nil {
 			return err
 		}
-		
+
 		// Activate the selected plan
 		if err := tx.Model(&models.WorkoutPlan{}).
 			Where("id = ? AND user_id = ?", id, userID).
 			Update("is_active", true).Error; err != nil {
 			return err
 		}
-		
+
 		return nil
 	})
 }
@@ -167,7 +166,7 @@ func (r *workoutPlanRepository) CreateDay(ctx context.Context, day *models.Worko
 	// Invalidate parent plan cache
 	cacheKey := fmt.Sprintf("plan:%d", day.PlanID)
 	r.redis.Del(ctx, cacheKey)
-	
+
 	return r.db.WithContext(ctx).Create(day).Error
 }
 
@@ -176,7 +175,7 @@ func (r *workoutPlanRepository) UpdateDay(ctx context.Context, day *models.Worko
 	// Invalidate parent plan cache
 	cacheKey := fmt.Sprintf("plan:%d", day.PlanID)
 	r.redis.Del(ctx, cacheKey)
-	
+
 	return r.db.WithContext(ctx).Save(day).Error
 }
 
@@ -185,7 +184,7 @@ func (r *workoutPlanRepository) DeleteDay(ctx context.Context, id uint, planID u
 	// Invalidate parent plan cache
 	cacheKey := fmt.Sprintf("plan:%d", planID)
 	r.redis.Del(ctx, cacheKey)
-	
+
 	return r.db.WithContext(ctx).
 		Where("id = ? AND plan_id = ?", id, planID).
 		Delete(&models.WorkoutPlanDay{}).Error
@@ -196,13 +195,13 @@ func (r *workoutPlanRepository) CreateDays(ctx context.Context, days []models.Wo
 	if len(days) == 0 {
 		return nil
 	}
-	
+
 	// Invalidate parent plan cache
 	if len(days) > 0 {
 		cacheKey := fmt.Sprintf("plan:%d", days[0].PlanID)
 		r.redis.Del(ctx, cacheKey)
 	}
-	
+
 	return r.db.WithContext(ctx).Create(&days).Error
 }
 
@@ -211,7 +210,7 @@ func (r *workoutPlanRepository) DeleteDays(ctx context.Context, planID uint) err
 	// Invalidate parent plan cache
 	cacheKey := fmt.Sprintf("plan:%d", planID)
 	r.redis.Del(ctx, cacheKey)
-	
+
 	return r.db.WithContext(ctx).
 		Where("plan_id = ?", planID).
 		Delete(&models.WorkoutPlanDay{}).Error
@@ -268,7 +267,7 @@ func (r *workoutPlanRepository) GetScheduledByDateRange(ctx context.Context, use
 func (r *workoutPlanRepository) GetScheduledByDate(ctx context.Context, userID uint, date time.Time) ([]models.ScheduledWorkout, error) {
 	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
 	endOfDay := startOfDay.Add(24 * time.Hour)
-	
+
 	var scheduled []models.ScheduledWorkout
 	if err := r.db.WithContext(ctx).
 		Preload("Plan").
@@ -286,7 +285,7 @@ func (r *workoutPlanRepository) GetTodaysScheduled(ctx context.Context, userID u
 	today := time.Now()
 	startOfDay := time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
 	endOfDay := startOfDay.Add(24 * time.Hour)
-	
+
 	var scheduled models.ScheduledWorkout
 	if err := r.db.WithContext(ctx).
 		Preload("Plan").

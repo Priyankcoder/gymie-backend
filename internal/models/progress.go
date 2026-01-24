@@ -1,4 +1,3 @@
-
 package models
 
 import (
@@ -9,15 +8,15 @@ import (
 
 // ProgressPhoto represents a progress photo
 type ProgressPhoto struct {
-	ID          uint           `gorm:"primaryKey" json:"id"`
-	UserID      uint           `gorm:"not null;index" json:"userId"`
-	Date        time.Time      `gorm:"not null;index" json:"date"`
-	ImageURL    string         `gorm:"not null" json:"imageUrl"`
-	Weight      *float64       `json:"weight,omitempty"` // in kg
-	Notes       string         `json:"notes,omitempty"`
-	CreatedAt   time.Time      `json:"createdAt"`
-	UpdatedAt   time.Time      `json:"updatedAt"`
-	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	UserID    uint           `gorm:"not null;index" json:"userId"`
+	Date      time.Time      `gorm:"not null;index" json:"date"`
+	ImageURL  string         `gorm:"not null" json:"imageUrl"`
+	Weight    *float64       `json:"weight,omitempty"` // in kg
+	Notes     string         `json:"notes,omitempty"`
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relationships
 	User User `gorm:"foreignKey:UserID" json:"-"`
@@ -69,11 +68,11 @@ type WeightEntryUpdateRequest struct {
 
 // WeightProgressResponse represents weight progress over time
 type WeightProgressResponse struct {
-	StartWeight   *float64     `json:"startWeight,omitempty"`
-	CurrentWeight *float64     `json:"currentWeight,omitempty"`
-	GoalWeight    *float64     `json:"goalWeight,omitempty"`
-	TotalChange   float64      `json:"totalChange"`
-	AverageChange float64      `json:"averageChange"` // per week
+	StartWeight   *float64      `json:"startWeight,omitempty"`
+	CurrentWeight *float64      `json:"currentWeight,omitempty"`
+	GoalWeight    *float64      `json:"goalWeight,omitempty"`
+	TotalChange   float64       `json:"totalChange"`
+	AverageChange float64       `json:"averageChange"` // per week
 	Entries       []WeightEntry `json:"entries"`
 }
 

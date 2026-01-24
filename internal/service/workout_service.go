@@ -1,4 +1,3 @@
-
 package service
 
 import (
@@ -41,7 +40,7 @@ func (s *workoutService) Create(ctx context.Context, userID uint, req *models.Wo
 	} else {
 		log.Printf("[DEBUG] req.Completed is nil")
 	}
-	
+
 	workout := &models.Workout{
 		UserID:    userID,
 		Name:      req.Name,
@@ -50,7 +49,7 @@ func (s *workoutService) Create(ctx context.Context, userID uint, req *models.Wo
 		Completed: req.Completed,
 		Notes:     req.Notes,
 	}
-	
+
 	// Debug logging after assignment
 	if workout.Completed != nil {
 		log.Printf("[DEBUG] workout.Completed = %v (value: %v)", workout.Completed, *workout.Completed)

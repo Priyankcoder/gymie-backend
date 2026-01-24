@@ -1,4 +1,3 @@
-
 package routes
 
 import (
@@ -32,7 +31,7 @@ func SetupRouter(services *service.Services, cfg *config.Config) *gin.Engine {
 		c.JSON(http.StatusOK, models.NewSuccessResponse(
 			"Server is running",
 			gin.H{
-				"status": "healthy",
+				"status":  "healthy",
 				"version": "1.0.0",
 			},
 		))
@@ -45,7 +44,7 @@ func SetupRouter(services *service.Services, cfg *config.Config) *gin.Engine {
 	v1 := router.Group("/v1")
 	{
 		// Initialize handlers
-		authHandler := handlers.NewAuthHandler(services.Auth)
+		authHandler := handlers.NewAuthHandler(services.Auth, services.DB, services.Email)
 		userHandler := handlers.NewUserHandler(services.User)
 		workoutHandler := handlers.NewWorkoutHandler(services.Workout)
 		nutritionHandler := handlers.NewNutritionHandler(services.Nutrition)
@@ -59,6 +58,11 @@ func SetupRouter(services *service.Services, cfg *config.Config) *gin.Engine {
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/google", authHandler.LoginWithGoogle)
+
+			// Email verification routes (public)
+			auth.GET("/verify-email", authHandler.VerifyEmail)
+			auth.POST("/resend-verification", authHandler.ResendVerification)
+			auth.GET("/verification-status/:email", authHandler.GetVerificationStatus)
 		}
 
 		// Protected routes (authentication required)

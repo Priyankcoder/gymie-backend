@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -13,14 +12,14 @@ import (
 
 // DishTaxonomy represents the JSON structure
 type DishTaxonomy struct {
-	Version            string                       `json:"version"`
-	LastUpdated        string                       `json:"last_updated"`
-	Dishes             map[string]DishInfo          `json:"dishes"`
-	PortionMultipliers map[string]float64           `json:"portion_multipliers"`
-	ConfidenceThreshold float64                     `json:"confidence_threshold"`
+	Version             string              `json:"version"`
+	LastUpdated         string              `json:"last_updated"`
+	Dishes              map[string]DishInfo `json:"dishes"`
+	PortionMultipliers  map[string]float64  `json:"portion_multipliers"`
+	ConfidenceThreshold float64             `json:"confidence_threshold"`
 }
 
-type DishInfo struct {	
+type DishInfo struct {
 	DisplayName string   `json:"display_name"`
 	Aliases     []string `json:"aliases"`
 	Category    string   `json:"category"`

@@ -1,4 +1,3 @@
-
 package repository
 
 import (
@@ -43,7 +42,7 @@ func (r *userRepository) Create(ctx context.Context, user *models.User) error {
 // GetByID retrieves a user by ID with caching
 func (r *userRepository) GetByID(ctx context.Context, id uint) (*models.User, error) {
 	cacheKey := fmt.Sprintf("user:%d", id)
-	
+
 	// Try cache first
 	cached, err := r.redis.Get(ctx, cacheKey).Result()
 	if err == nil {

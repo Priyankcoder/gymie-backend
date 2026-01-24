@@ -1,4 +1,3 @@
-
 package models
 
 import (
@@ -30,13 +29,13 @@ type NutritionDay struct {
 
 // Meal represents a meal within a nutrition day
 type Meal struct {
-	ID              uint           `gorm:"primaryKey" json:"id"`
-	NutritionDayID  uint           `gorm:"not null;index" json:"nutritionDayId"`
-	Name            string         `gorm:"not null" json:"name"` // "Breakfast", "Lunch", etc.
-	Time            *time.Time     `json:"time,omitempty"`
-	CreatedAt       time.Time      `json:"createdAt"`
-	UpdatedAt       time.Time      `json:"updatedAt"`
-	DeletedAt       gorm.DeletedAt `gorm:"index" json:"-"`
+	ID             uint           `gorm:"primaryKey" json:"id"`
+	NutritionDayID uint           `gorm:"not null;index" json:"nutritionDayId"`
+	Name           string         `gorm:"not null" json:"name"` // "Breakfast", "Lunch", etc.
+	Time           *time.Time     `json:"time,omitempty"`
+	CreatedAt      time.Time      `json:"createdAt"`
+	UpdatedAt      time.Time      `json:"updatedAt"`
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relationships
 	NutritionDay NutritionDay `gorm:"foreignKey:NutritionDayID" json:"-"`
@@ -55,9 +54,9 @@ type Food struct {
 	MealID    uint           `gorm:"not null;index" json:"mealId"`
 	Name      string         `gorm:"not null" json:"name"`
 	Calories  int            `gorm:"not null" json:"calories"`
-	Protein   int            `json:"protein"`  // in grams
-	Carbs     int            `json:"carbs"`    // in grams
-	Fat       int            `json:"fat"`      // in grams
+	Protein   int            `json:"protein"` // in grams
+	Carbs     int            `json:"carbs"`   // in grams
+	Fat       int            `json:"fat"`     // in grams
 	Quantity  float64        `gorm:"default:1" json:"quantity"`
 	Unit      string         `json:"unit,omitempty"` // "serving", "grams", "oz", etc.
 	CreatedAt time.Time      `json:"createdAt"`
@@ -118,12 +117,12 @@ type FoodUpdateRequest struct {
 
 // NutritionStatsResponse represents nutrition statistics
 type NutritionStatsResponse struct {
-	TotalDays        int64   `json:"total_days"`
-	AverageCalories  float64 `json:"average_calories"`
-	AverageProtein   float64 `json:"average_protein"`
-	AverageCarbs     float64 `json:"average_carbs"`
-	AverageFat       float64 `json:"average_fat"`
-	LastLoggedDate   *time.Time `json:"last_logged_date,omitempty"`
+	TotalDays       int64      `json:"total_days"`
+	AverageCalories float64    `json:"average_calories"`
+	AverageProtein  float64    `json:"average_protein"`
+	AverageCarbs    float64    `json:"average_carbs"`
+	AverageFat      float64    `json:"average_fat"`
+	LastLoggedDate  *time.Time `json:"last_logged_date,omitempty"`
 }
 
 // CalculateTotals calculates the total macros for a nutrition day

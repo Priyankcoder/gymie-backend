@@ -1,4 +1,3 @@
-
 package repository
 
 import (
@@ -18,7 +17,7 @@ type ProgressRepository interface {
 	GetProgressPhotos(ctx context.Context, userID uint, query *models.ListQuery) ([]models.ProgressPhoto, int64, error)
 	UpdateProgressPhoto(ctx context.Context, photo *models.ProgressPhoto) error
 	DeleteProgressPhoto(ctx context.Context, id uint, userID uint) error
-	
+
 	// Weight Entries
 	CreateWeightEntry(ctx context.Context, entry *models.WeightEntry) error
 	GetWeightEntryByID(ctx context.Context, id uint, userID uint) (*models.WeightEntry, error)
@@ -26,7 +25,7 @@ type ProgressRepository interface {
 	GetWeightEntriesByDateRange(ctx context.Context, userID uint, startDate, endDate time.Time) ([]models.WeightEntry, error)
 	UpdateWeightEntry(ctx context.Context, entry *models.WeightEntry) error
 	DeleteWeightEntry(ctx context.Context, id uint, userID uint) error
-	
+
 	// Stats
 	GetWeightProgress(ctx context.Context, userID uint) (*models.WeightProgressResponse, error)
 }
@@ -63,7 +62,7 @@ func (r *progressRepository) GetProgressPhotoByID(ctx context.Context, id uint, 
 // GetProgressPhotos retrieves progress photos for a user with pagination
 func (r *progressRepository) GetProgressPhotos(ctx context.Context, userID uint, query *models.ListQuery) ([]models.ProgressPhoto, int64, error) {
 	query.SetDefaults()
-	
+
 	var photos []models.ProgressPhoto
 	var total int64
 
@@ -119,7 +118,7 @@ func (r *progressRepository) GetWeightEntryByID(ctx context.Context, id uint, us
 // GetWeightEntries retrieves weight entries for a user with pagination
 func (r *progressRepository) GetWeightEntries(ctx context.Context, userID uint, query *models.ListQuery) ([]models.WeightEntry, int64, error) {
 	query.SetDefaults()
-	
+
 	var entries []models.WeightEntry
 	var total int64
 
@@ -147,7 +146,7 @@ func (r *progressRepository) GetWeightEntries(ctx context.Context, userID uint, 
 // GetWeightEntriesByDateRange retrieves weight entries within a date range
 func (r *progressRepository) GetWeightEntriesByDateRange(ctx context.Context, userID uint, startDate, endDate time.Time) ([]models.WeightEntry, error) {
 	var entries []models.WeightEntry
-	
+
 	if err := r.db.WithContext(ctx).
 		Where("user_id = ? AND date BETWEEN ? AND ?", userID, startDate, endDate).
 		Order("date ASC").
@@ -173,7 +172,7 @@ func (r *progressRepository) DeleteWeightEntry(ctx context.Context, id uint, use
 // GetWeightProgress retrieves weight progress statistics
 func (r *progressRepository) GetWeightProgress(ctx context.Context, userID uint) (*models.WeightProgressResponse, error) {
 	var entries []models.WeightEntry
-	
+
 	if err := r.db.WithContext(ctx).
 		Where("user_id = ?", userID).
 		Order("date ASC").

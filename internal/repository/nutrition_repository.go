@@ -1,4 +1,3 @@
-
 package repository
 
 import (
@@ -20,17 +19,17 @@ type NutritionRepository interface {
 	GetByDateRange(ctx context.Context, userID uint, startDate, endDate time.Time) ([]models.NutritionDay, error)
 	Update(ctx context.Context, day *models.NutritionDay) error
 	Delete(ctx context.Context, id uint, userID uint) error
-	
+
 	// Meal operations
 	CreateMeal(ctx context.Context, meal *models.Meal) error
 	UpdateMeal(ctx context.Context, meal *models.Meal) error
 	DeleteMeal(ctx context.Context, id uint, nutritionDayID uint) error
-	
+
 	// Food operations
 	CreateFood(ctx context.Context, food *models.Food) error
 	UpdateFood(ctx context.Context, food *models.Food) error
 	DeleteFood(ctx context.Context, id uint, mealID uint) error
-	
+
 	// Stats
 	GetNutritionStats(ctx context.Context, userID uint) (*models.NutritionStatsResponse, error)
 }
@@ -56,7 +55,7 @@ func (r *nutritionRepository) Create(ctx context.Context, day *models.NutritionD
 // GetByID retrieves a nutrition day by ID with caching
 func (r *nutritionRepository) GetByID(ctx context.Context, id uint, userID uint) (*models.NutritionDay, error) {
 	cacheKey := fmt.Sprintf("nutrition:%d", id)
-	
+
 	// Try cache first
 	cached, err := r.redis.Get(ctx, cacheKey).Result()
 	if err == nil {
@@ -93,7 +92,7 @@ func (r *nutritionRepository) GetByID(ctx context.Context, id uint, userID uint)
 func (r *nutritionRepository) GetByDate(ctx context.Context, userID uint, date time.Time) (*models.NutritionDay, error) {
 	// Normalize date to start of day
 	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
-	
+
 	var day models.NutritionDay
 	if err := r.db.WithContext(ctx).
 		Preload("Meals.Foods").
@@ -111,7 +110,7 @@ func (r *nutritionRepository) GetByDate(ctx context.Context, userID uint, date t
 // GetByDateRange retrieves nutrition days within a date range
 func (r *nutritionRepository) GetByDateRange(ctx context.Context, userID uint, startDate, endDate time.Time) ([]models.NutritionDay, error) {
 	var days []models.NutritionDay
-	
+
 	if err := r.db.WithContext(ctx).
 		Preload("Meals.Foods").
 		Where("user_id = ? AND date BETWEEN ? AND ?", userID, startDate, endDate).
@@ -239,7 +238,7 @@ func (r *nutritionRepository) GetNutritionStats(ctx context.Context, userID uint
 		Preload("Meals.Foods").
 		Where("user_id = ?", userID).
 		Find(&days).Error; err == nil && len(days) > 0 {
-		
+
 		var totalCal, totalPro, totalCarb, totalFat float64
 		for _, day := range days {
 			day.CalculateTotals()
@@ -248,7 +247,7 @@ func (r *nutritionRepository) GetNutritionStats(ctx context.Context, userID uint
 			totalCarb += float64(day.TotalCarbs)
 			totalFat += float64(day.TotalFat)
 		}
-		
+
 		count := float64(len(days))
 		stats.AverageCalories = totalCal / count
 		stats.AverageProtein = totalPro / count

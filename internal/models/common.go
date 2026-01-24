@@ -1,4 +1,3 @@
-
 package models
 
 // SuccessResponse represents a successful API response

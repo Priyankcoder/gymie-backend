@@ -1,4 +1,4 @@
-package models	
+package models
 
 import (
 	"time"
@@ -13,7 +13,7 @@ type Workout struct {
 	Name      string         `gorm:"not null" json:"name"`
 	Date      time.Time      `gorm:"not null;index" json:"date"`
 	Duration  *int           `json:"duration,omitempty"` // in minutes
-	Completed *bool          `json:"completed"` // using pointer to ensure GORM saves false values
+	Completed *bool          `json:"completed"`          // using pointer to ensure GORM saves false values
 	Notes     string         `json:"notes,omitempty"`
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`
@@ -26,15 +26,15 @@ type Workout struct {
 
 // Exercise represents an exercise within a workout
 type Exercise struct {
-	ID         uint           `gorm:"primaryKey" json:"id"`
-	WorkoutID  uint           `gorm:"not null;index" json:"workoutId"`
-	Name       string         `gorm:"not null" json:"name"`
-	MuscleGroup string        `json:"muscleGroup,omitempty"` // "chest", "back", "legs", etc.
-	Order      int            `gorm:"not null" json:"order"`  // Order of exercise in workout
-	Notes      string         `json:"notes,omitempty"`
-	CreatedAt  time.Time      `json:"createdAt"`
-	UpdatedAt  time.Time      `json:"updatedAt"`
-	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
+	ID          uint           `gorm:"primaryKey" json:"id"`
+	WorkoutID   uint           `gorm:"not null;index" json:"workoutId"`
+	Name        string         `gorm:"not null" json:"name"`
+	MuscleGroup string         `json:"muscleGroup,omitempty"` // "chest", "back", "legs", etc.
+	Order       int            `gorm:"not null" json:"order"` // Order of exercise in workout
+	Notes       string         `json:"notes,omitempty"`
+	CreatedAt   time.Time      `json:"createdAt"`
+	UpdatedAt   time.Time      `json:"updatedAt"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relationships
 	Workout Workout      `gorm:"foreignKey:WorkoutID" json:"-"`
@@ -59,12 +59,12 @@ type WorkoutSet struct {
 
 // WorkoutCreateRequest represents the request to create a workout
 type WorkoutCreateRequest struct {
-	Name      string                     `json:"name" binding:"required"`
-	Date      time.Time                  `json:"date" binding:"required"`
-	Duration  *int                       `json:"duration,omitempty"`
-	Completed *bool                      `json:"completed"`
-	Notes     string                     `json:"notes,omitempty"`
-	Exercises []ExerciseCreateRequest    `json:"exercises,omitempty"`
+	Name      string                  `json:"name" binding:"required"`
+	Date      time.Time               `json:"date" binding:"required"`
+	Duration  *int                    `json:"duration,omitempty"`
+	Completed *bool                   `json:"completed"`
+	Notes     string                  `json:"notes,omitempty"`
+	Exercises []ExerciseCreateRequest `json:"exercises,omitempty"`
 }
 
 // ExerciseCreateRequest represents the request to create an exercise
@@ -111,10 +111,10 @@ type SetUpdateRequest struct {
 
 // WorkoutStatsResponse represents workout statistics
 type WorkoutStatsResponse struct {
-	TotalWorkouts    int64   `json:"totalWorkouts"`
-	TotalExercises   int64   `json:"totalExercises"`
-	TotalSets        int64   `json:"totalSets"`
-	TotalVolume      float64 `json:"totalVolume"` // weight * reps
-	AverageDuration  float64 `json:"averageDuration"`
-	LastWorkoutDate  *time.Time `json:"lastWorkoutDate,omitempty"`
+	TotalWorkouts   int64      `json:"totalWorkouts"`
+	TotalExercises  int64      `json:"totalExercises"`
+	TotalSets       int64      `json:"totalSets"`
+	TotalVolume     float64    `json:"totalVolume"` // weight * reps
+	AverageDuration float64    `json:"averageDuration"`
+	LastWorkoutDate *time.Time `json:"lastWorkoutDate,omitempty"`
 }

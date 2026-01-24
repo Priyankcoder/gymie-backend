@@ -1,4 +1,3 @@
-
 package service
 
 import (
@@ -58,9 +57,9 @@ func (s *userService) Update(ctx context.Context, userID uint, req *models.UserU
 	}
 
 	// Update profile if any profile field is provided
-	if req.DisplayName != nil || req.ProfilePicture != nil || req.Bio != nil || 
-	   req.Height != nil || req.Weight != nil || req.Age != nil || 
-	   req.Gender != nil || req.Goal != nil {
+	if req.DisplayName != nil || req.ProfilePicture != nil || req.Bio != nil ||
+		req.Height != nil || req.Weight != nil || req.Age != nil ||
+		req.Gender != nil || req.Goal != nil {
 		profile := user.Profile
 		if profile == nil {
 			profile = &models.UserProfile{

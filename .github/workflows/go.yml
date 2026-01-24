@@ -1,0 +1,36 @@
+# Backend Build Check
+# Only verifies that the backend builds successfully
+
+name: Backend CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    name: Build Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+          cache-dependency-path: go.sum
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build Backend
+        run: |
+          # Build all packages except scripts and migrations
+          go build -v $(go list ./... | grep -v '/scripts' | grep -v '/migrations')
+  
+      - name: Build API Binary
+        run: go build -o api cmd/api/main.go

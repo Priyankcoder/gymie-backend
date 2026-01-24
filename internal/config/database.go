@@ -1,4 +1,3 @@
-
 package config
 
 import (
@@ -9,6 +8,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/yourusername/gymie-backend/internal/models"
 )
 
 // InitDB initializes and returns a database connection
@@ -58,5 +59,37 @@ func InitDB(cfg *Config) (*gorm.DB, error) {
 
 	log.Println("Database connection established")
 
+	// Auto-migrate database schema
+	if err := autoMigrate(db); err != nil {
+		return nil, fmt.Errorf("failed to auto-migrate database: %w", err)
+	}
+
 	return db, nil
+}
+
+// autoMigrate automatically migrates database schema to match models
+func autoMigrate(db *gorm.DB) error {
+	log.Println("Running auto-migration...")
+
+	// List all models that need to be migrated
+	models := []interface{}{
+		&models.User{},
+		&models.UserProfile{},
+		&models.Workout{},
+		&models.Exercise{},
+		&models.WorkoutSet{},
+		&models.NutritionDay{},
+		&models.Meal{},
+		&models.Food{},
+		&models.ProgressPhoto{},
+		&models.WeightEntry{},
+	}
+
+	// Run auto-migration for all models
+	if err := db.AutoMigrate(models...); err != nil {
+		return fmt.Errorf("auto-migration failed: %w", err)
+	}
+
+	log.Println("✅ Auto-migration completed successfully")
+	return nil
 }

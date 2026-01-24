@@ -1,4 +1,3 @@
-
 package config
 
 import (
@@ -33,17 +32,17 @@ type Config struct {
 	JWTExpiration int // in hours
 
 	// Storage (Cloudflare R2 / S3-compatible)
-	StorageEndpoint       string
-	StorageAccessKey      string
-	StorageSecretKey      string
-	StorageBucket         string
-	StorageRegion         string
-	StoragePublicURL      string
-	StorageBasePath       string // Local file storage base path
-	StoragePresignExpiry  int // in minutes
+	StorageEndpoint      string
+	StorageAccessKey     string
+	StorageSecretKey     string
+	StorageBucket        string
+	StorageRegion        string
+	StoragePublicURL     string
+	StorageBasePath      string // Local file storage base path
+	StoragePresignExpiry int    // in minutes
 
 	// Rate Limiting
-	RateLimitEnabled bool
+	RateLimitEnabled  bool
 	RateLimitRequests int
 	RateLimitWindow   int // in seconds
 

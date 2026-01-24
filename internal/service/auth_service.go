@@ -1,14 +1,16 @@
-
 package service
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/yourusername/gymie-backend/internal/config"
 	"github.com/yourusername/gymie-backend/internal/models"
 	"github.com/yourusername/gymie-backend/internal/repository"
+	"github.com/yourusername/gymie-backend/internal/services"
 	"github.com/yourusername/gymie-backend/internal/utils"
 	"gorm.io/gorm"
 )
@@ -22,15 +24,17 @@ type AuthService interface {
 }
 
 type authService struct {
-	userRepo repository.UserRepository
-	cfg      *config.Config
+	userRepo     repository.UserRepository
+	cfg          *config.Config
+	emailService *services.EmailService
 }
 
 // NewAuthService creates a new auth service
-func NewAuthService(userRepo repository.UserRepository, cfg *config.Config) AuthService {
+func NewAuthService(userRepo repository.UserRepository, cfg *config.Config, emailService *services.EmailService) AuthService {
 	return &authService{
-		userRepo: userRepo,
-		cfg:      cfg,
+		userRepo:     userRepo,
+		cfg:          cfg,
+		emailService: emailService,
 	}
 }
 
@@ -51,11 +55,20 @@ func (s *authService) Register(ctx context.Context, req *models.UserRegisterRequ
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	// Create user
+	// Generate verification token
+	verificationToken, err := utils.GenerateVerificationToken()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate verification token: %w", err)
+	}
+
+	// Create user with email verification fields
 	user := &models.User{
-		Email:    req.Email,
-		Password: hashedPassword,
-		Name:     req.Name,
+		Email:                      req.Email,
+		Password:                   hashedPassword,
+		Name:                       req.Name,
+		EmailVerified:              false,
+		VerificationToken:          verificationToken,
+		VerificationTokenExpiresAt: time.Now().Add(24 * time.Hour),
 	}
 
 	if err := s.userRepo.Create(ctx, user); err != nil {
@@ -73,14 +86,29 @@ func (s *authService) Register(ctx context.Context, req *models.UserRegisterRequ
 	// Load profile
 	user.Profile = profile
 
-	// Generate token
-	token, err := utils.GenerateToken(user.ID, user.Email, s.cfg.JWTSecret, s.cfg.JWTExpiration)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate token: %w", err)
+	// Send verification email
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		frontendURL = "http://localhost:8081" // Default for development
+	}
+	verificationLink := fmt.Sprintf("%s/verify-email?token=%s", frontendURL, verificationToken)
+
+	fmt.Printf("=== EMAIL DEBUG ===\n")
+	fmt.Printf("Sending verification email to: %s\n", user.Email)
+	fmt.Printf("User name: %s\n", user.Name)
+	fmt.Printf("Verification link: %s\n", verificationLink)
+	fmt.Printf("==================\n")
+
+	if err := s.emailService.SendVerificationEmail(user.Email, user.Name, verificationLink); err != nil {
+		// Log error but don't fail registration
+		fmt.Printf("❌ FAILED to send verification email: %v\n", err)
+	} else {
+		fmt.Printf("✅ Verification email sent successfully to %s\n", user.Email)
 	}
 
+	// Return response WITHOUT token - user must verify email first
 	return &models.AuthResponse{
-		Token: token,
+		Token: "", // No token until email is verified
 		User:  user.ToResponse(),
 	}, nil
 }
@@ -99,6 +127,11 @@ func (s *authService) Login(ctx context.Context, req *models.UserLoginRequest) (
 	// Compare password
 	if err := utils.ComparePassword(user.Password, req.Password); err != nil {
 		return nil, fmt.Errorf("invalid email or password")
+	}
+
+	// Check if email is verified
+	if !user.EmailVerified {
+		return nil, fmt.Errorf("email_not_verified")
 	}
 
 	// Generate token
@@ -162,9 +195,10 @@ func (s *authService) LoginWithGoogle(ctx context.Context, req *models.GoogleSig
 		}
 
 		user = &models.User{
-			Email:    email,
-			Password: hashedPassword,
-			Name:     name,
+			Email:         email,
+			Password:      hashedPassword,
+			Name:          name,
+			EmailVerified: true, // Google users are already verified
 		}
 
 		if err := s.userRepo.Create(ctx, user); err != nil {

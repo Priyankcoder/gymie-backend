@@ -1,4 +1,3 @@
-
 package models
 
 import (
@@ -17,6 +16,11 @@ type User struct {
 	UpdatedAt time.Time      `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
+	// Email verification
+	EmailVerified              bool      `gorm:"default:false" json:"emailVerified"`
+	VerificationToken          string    `gorm:"index:idx_users_verification_token;unique" json:"-"`
+	VerificationTokenExpiresAt time.Time `json:"-"`
+
 	// Profile information
 	Profile *UserProfile `gorm:"foreignKey:UserID" json:"profile,omitempty"`
 
@@ -31,14 +35,14 @@ type User struct {
 type UserProfile struct {
 	ID             uint      `gorm:"primaryKey" json:"id"`
 	UserID         uint      `gorm:"uniqueIndex;not null" json:"userId"`
-	DisplayName    *string   `json:"displayName,omitempty"` // Custom display name (can be different from Name)
+	DisplayName    *string   `json:"displayName,omitempty"`    // Custom display name (can be different from Name)
 	ProfilePicture *string   `json:"profilePicture,omitempty"` // URL to profile picture
-	Bio            *string   `json:"bio,omitempty"` // User bio/description
-	Height         *float64  `json:"height,omitempty"`    // in cm
-	Weight         *float64  `json:"weight,omitempty"`    // in kg
+	Bio            *string   `json:"bio,omitempty"`            // User bio/description
+	Height         *float64  `json:"height,omitempty"`         // in cm
+	Weight         *float64  `json:"weight,omitempty"`         // in kg
 	Age            *int      `json:"age,omitempty"`
-	Gender         string    `json:"gender,omitempty"`    // "male", "female", "other"
-	Goal           string    `json:"goal,omitempty"`      // "lose_weight", "gain_muscle", "maintain"
+	Gender         string    `json:"gender,omitempty"` // "male", "female", "other"
+	Goal           string    `json:"goal,omitempty"`   // "lose_weight", "gain_muscle", "maintain"
 	CreatedAt      time.Time `json:"createdAt"`
 	UpdatedAt      time.Time `json:"updatedAt"`
 }
@@ -72,23 +76,25 @@ type UserUpdateRequest struct {
 
 // UserResponse represents the user response (without sensitive data)
 type UserResponse struct {
-	ID        uint          `json:"id"`
-	Email     string        `json:"email"`
-	Name      string        `json:"name"`
-	Profile   *UserProfile  `json:"profile,omitempty"`
-	CreatedAt time.Time     `json:"createdAt"`
-	UpdatedAt time.Time     `json:"updatedAt"`
+	ID            uint         `json:"id"`
+	Email         string       `json:"email"`
+	Name          string       `json:"name"`
+	EmailVerified bool         `json:"emailVerified"`
+	Profile       *UserProfile `json:"profile,omitempty"`
+	CreatedAt     time.Time    `json:"createdAt"`
+	UpdatedAt     time.Time    `json:"updatedAt"`
 }
 
 // ToResponse converts User to UserResponse
 func (u *User) ToResponse() *UserResponse {
 	return &UserResponse{
-		ID:        u.ID,
-		Email:     u.Email,
-		Name:      u.Name,
-		Profile:   u.Profile,
-		CreatedAt: u.CreatedAt,
-		UpdatedAt: u.UpdatedAt,
+		ID:            u.ID,
+		Email:         u.Email,
+		Name:          u.Name,
+		EmailVerified: u.EmailVerified,
+		Profile:       u.Profile,
+		CreatedAt:     u.CreatedAt,
+		UpdatedAt:     u.UpdatedAt,
 	}
 }
 
