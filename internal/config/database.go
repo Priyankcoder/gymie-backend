@@ -76,13 +76,12 @@ func autoMigrate(db *gorm.DB) error {
 	models := []interface{}{
 		&models.User{},
 		&models.UserProfile{},
-		&models.Exercise{},
 		&models.Workout{},
-		&models.WorkoutExercise{},
-		&models.ExerciseSet{},
+		&models.Exercise{},
+		&models.WorkoutSet{},
 		&models.NutritionDay{},
 		&models.Meal{},
-		&models.MealFood{},
+		&models.Food{},
 		&models.ProgressPhoto{},
 		&models.WeightEntry{},
 	}
