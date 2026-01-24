@@ -73,16 +73,34 @@ func autoMigrate(db *gorm.DB) error {
 
 	// List all models that need to be migrated
 	models := []interface{}{
+		// Core user models
 		&models.User{},
 		&models.UserProfile{},
+		
+		// Workout models
 		&models.Workout{},
 		&models.Exercise{},
 		&models.WorkoutSet{},
+		
+		// Nutrition models
 		&models.NutritionDay{},
 		&models.Meal{},
 		&models.Food{},
+		
+		// Progress tracking models
 		&models.ProgressPhoto{},
 		&models.WeightEntry{},
+		
+		// Workout planning models
+		&models.WorkoutPlan{},
+		&models.WorkoutPlanDay{},
+		&models.ScheduledWorkout{},
+		
+		// Offline nutrition models
+		&models.DishMaster{},
+		&models.DishNutritionMaster{},
+		&models.UserCorrection{},
+		&models.ModelVersion{},
 	}
 
 	// Run auto-migration for all models
@@ -91,5 +109,6 @@ func autoMigrate(db *gorm.DB) error {
 	}
 
 	log.Println("✅ Auto-migration completed successfully")
+	log.Println("✅ All tables synced including: users (with email_verified), workout_plans, scheduled_workouts, offline_nutrition tables")
 	return nil
 }
