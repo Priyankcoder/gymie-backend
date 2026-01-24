@@ -18,6 +18,18 @@ type SendGridEmailService struct {
 }
 
 func NewSendGridEmailService(cfg *config.Config) *SendGridEmailService {
+	// Validate API key
+	if cfg.SendGridAPIKey == "" {
+		log.Println("❌ CRITICAL ERROR: SendGrid API key is empty!")
+		panic("SENDGRID_API_KEY environment variable is required")
+	}
+	
+	if len(cfg.SendGridAPIKey) < 20 {
+		log.Printf("❌ CRITICAL ERROR: SendGrid API key is too short (%d chars)\n", len(cfg.SendGridAPIKey))
+		log.Println("   Expected format: SG.xxxxx... (typically 69 characters)")
+		panic("Invalid SENDGRID_API_KEY - key appears to be incomplete")
+	}
+	
 	service := &SendGridEmailService{
 		apiKey:      cfg.SendGridAPIKey,
 		fromEmail:   cfg.FromEmail,
@@ -26,56 +38,17 @@ func NewSendGridEmailService(cfg *config.Config) *SendGridEmailService {
 	}
 	
 	log.Println("=== SENDGRID EMAIL SERVICE INITIALIZED ===")
-	log.Printf("API Key: %s****%s (%d chars)\n", 
-		cfg.SendGridAPIKey[:4], 
-		cfg.SendGridAPIKey[len(cfg.SendGridAPIKey)-4:], 
-		len(cfg.SendGridAPIKey))
+	// Safe logging - only show first 10 and last 4 chars
+	maskedKey := cfg.SendGridAPIKey[:min(10, len(cfg.SendGridAPIKey))] + "****"
+	if len(cfg.SendGridAPIKey) > 4 {
+		maskedKey += cfg.SendGridAPIKey[len(cfg.SendGridAPIKey)-4:]
+	}
+	log.Printf("API Key: %s (%d chars)\n", maskedKey, len(cfg.SendGridAPIKey))
 	log.Printf("From: %s <%s>\n", service.fromName, service.fromEmail)
 	log.Printf("Frontend URL: %s\n", service.frontendURL)
 	log.Println("==========================================")
 	
 	return service
-}
-
-type parsedEmail struct {
-	Name  string
-	Email string
-}
-
-func parseEmailFrom(smtpFrom string) parsedEmail {
-	// Parse "Name <email@example.com>" format
-	if len(smtpFrom) == 0 {
-		return parsedEmail{}
-	}
-	
-	// Find < and >
-	startIdx := -1
-	endIdx := -1
-	
-	for i, ch := range smtpFrom {
-		if ch == '<' {
-			startIdx = i
-		} else if ch == '>' {
-			endIdx = i
-			break
-		}
-	}
-	
-	if startIdx != -1 && endIdx != -1 && endIdx > startIdx {
-		email := smtpFrom[startIdx+1 : endIdx]
-		name := ""
-		if startIdx > 0 {
-			name = smtpFrom[:startIdx]
-			// Trim whitespace
-			for len(name) > 0 && (name[len(name)-1] == ' ' || name[len(name)-1] == '\t') {
-				name = name[:len(name)-1]
-			}
-		}
-		return parsedEmail{Name: name, Email: email}
-	}
-	
-	// Just an email address
-	return parsedEmail{Email: smtpFrom}
 }
 
 func (s *SendGridEmailService) SendVerificationEmail(toEmail, userName, verificationToken string) error {

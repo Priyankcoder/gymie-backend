@@ -49,20 +49,11 @@ type Config struct {
 	// CORS
 	CORSAllowedOrigins []string
 
-	// SMTP Email Configuration (legacy - Gmail)
-	SMTPHost     string
-	SMTPPort     string
-	SMTPUsername string
-	SMTPPassword string
-	SMTPFrom     string
-	
-	// SendGrid Configuration (preferred)
+	// SendGrid Email Configuration (REQUIRED)
 	SendGridAPIKey string
-	
-	// Common Email Configuration
-	FromEmail   string
-	FromName    string
-	FrontendURL string
+	FromEmail      string
+	FromName       string
+	FrontendURL    string
 }
 
 // Load reads configuration from environment variables
@@ -112,20 +103,11 @@ func Load() (*Config, error) {
 			getEnv("CORS_ALLOWED_ORIGINS", "*"),
 		},
 
-		// SMTP Email (legacy - Gmail)
-		SMTPHost:     getEnv("SMTP_HOST", "smtp.gmail.com"),
-		SMTPPort:     getEnv("SMTP_PORT", "587"),
-		SMTPUsername: getEnv("SMTP_USERNAME", ""),
-		SMTPPassword: getEnv("SMTP_PASSWORD", ""),
-		SMTPFrom:     getEnv("SMTP_FROM", getEnv("FROM_EMAIL", "")), // Support both formats
-		
-		// SendGrid (preferred)
+		// SendGrid Email Configuration (REQUIRED)
 		SendGridAPIKey: getEnv("SENDGRID_API_KEY", ""),
-		
-		// Common Email Configuration
-		FromEmail:   getEnv("FROM_EMAIL", "noreply@gymie.com"),
-		FromName:    getEnv("FROM_NAME", "Gymie"),
-		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
+		FromEmail:      getEnv("FROM_EMAIL", "noreply@gymie.com"),
+		FromName:       getEnv("FROM_NAME", "Gymie"),
+		FrontendURL:    getEnv("FRONTEND_URL", "http://localhost:3000"),
 	}
 
 	// Validate required fields
