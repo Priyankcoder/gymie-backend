@@ -4,13 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/yourusername/gymie-backend/internal/config"
 	"github.com/yourusername/gymie-backend/internal/models"
 	"github.com/yourusername/gymie-backend/internal/repository"
-	"github.com/yourusername/gymie-backend/internal/services"
 	"github.com/yourusername/gymie-backend/internal/utils"
 	"gorm.io/gorm"
 )
@@ -26,11 +24,11 @@ type AuthService interface {
 type authService struct {
 	userRepo     repository.UserRepository
 	cfg          *config.Config
-	emailService *services.EmailService
+	emailService EmailServiceInterface
 }
 
 // NewAuthService creates a new auth service
-func NewAuthService(userRepo repository.UserRepository, cfg *config.Config, emailService *services.EmailService) AuthService {
+func NewAuthService(userRepo repository.UserRepository, cfg *config.Config, emailService EmailServiceInterface) AuthService {
 	return &authService{
 		userRepo:     userRepo,
 		cfg:          cfg,
@@ -86,20 +84,15 @@ func (s *authService) Register(ctx context.Context, req *models.UserRegisterRequ
 	// Load profile
 	user.Profile = profile
 
-	// Send verification email
-	frontendURL := os.Getenv("FRONTEND_URL")
-	if frontendURL == "" {
-		frontendURL = "http://localhost:8081" // Default for development
-	}
-	verificationLink := fmt.Sprintf("%s/verify-email?token=%s", frontendURL, verificationToken)
-
+	// Send verification email (pass token, not full link)
 	fmt.Printf("=== EMAIL DEBUG ===\n")
 	fmt.Printf("Sending verification email to: %s\n", user.Email)
 	fmt.Printf("User name: %s\n", user.Name)
-	fmt.Printf("Verification link: %s\n", verificationLink)
+	fmt.Printf("Verification token: %s\n", verificationToken)
+	fmt.Printf("Frontend URL: %s\n", s.cfg.FrontendURL)
 	fmt.Printf("==================\n")
 
-	if err := s.emailService.SendVerificationEmail(user.Email, user.Name, verificationLink); err != nil {
+	if err := s.emailService.SendVerificationEmail(user.Email, user.Name, verificationToken); err != nil {
 		// Log error but don't fail registration
 		fmt.Printf("❌ FAILED to send verification email: %v\n", err)
 	} else {

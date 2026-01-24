@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+	
 	"github.com/yourusername/gymie-backend/internal/config"
 	"github.com/yourusername/gymie-backend/internal/repository"
 	"github.com/yourusername/gymie-backend/internal/services"
@@ -22,18 +24,38 @@ type Services struct {
 
 // NewServices creates a new Services instance
 func NewServices(repos *repository.Repositories, cfg *config.Config) *Services {
-	// Initialize email service
-	emailService := services.NewEmailService()
+	fmt.Println("\n╔══════════════════════════════════════════════════════════════╗")
+	fmt.Println("║              EMAIL SERVICE INITIALIZATION                    ║")
+	fmt.Println("╚══════════════════════════════════════════════════════════════╝")
+	
+	// Initialize email service based on configuration
+	var emailServiceInterface EmailServiceInterface
+	var legacyEmailService *services.EmailService
+	
+	if cfg.SendGridAPIKey != "" {
+		fmt.Println("✅ SendGrid API Key detected")
+		fmt.Printf("   └─ Using SendGrid Email Service (Production)\n\n")
+		// Use SendGrid if API key is provided (preferred)
+		emailServiceInterface = services.NewSendGridEmailService(cfg)
+		// Also initialize legacy service for backward compatibility
+		legacyEmailService = services.NewEmailService()
+	} else {
+		fmt.Println("⚠️  No SendGrid API Key found")
+		fmt.Printf("   └─ Falling back to Gmail SMTP Service\n\n")
+		// Fall back to SMTP (Gmail) if no SendGrid key
+		legacyEmailService = services.NewEmailService()
+		emailServiceInterface = legacyEmailService
+	}
 
 	return &Services{
-		Auth:             NewAuthService(repos.User, cfg, emailService),
+		Auth:             NewAuthService(repos.User, cfg, emailServiceInterface),
 		User:             NewUserService(repos.User),
 		Workout:          NewWorkoutService(repos.Workout),
 		Nutrition:        NewNutritionService(repos.Nutrition),
 		Progress:         NewProgressService(repos.Progress, cfg),
 		WorkoutPlan:      NewWorkoutPlanService(repos.WorkoutPlan),
 		OfflineNutrition: NewOfflineNutritionService(repos.DB),
-		Email:            emailService,
+		Email:            legacyEmailService,
 		DB:               repos.DB,
 	}
 }

@@ -1,15 +1,12 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/yourusername/gymie-backend/internal/models"
 	"github.com/yourusername/gymie-backend/internal/service"
-	"github.com/yourusername/gymie-backend/internal/services"
 	"github.com/yourusername/gymie-backend/internal/utils"
 	"gorm.io/gorm"
 )
@@ -17,10 +14,10 @@ import (
 type AuthHandler struct {
 	authService  service.AuthService
 	db           *gorm.DB
-	emailService *services.EmailService
+	emailService service.EmailServiceInterface
 }
 
-func NewAuthHandler(authService service.AuthService, db *gorm.DB, emailService *services.EmailService) *AuthHandler {
+func NewAuthHandler(authService service.AuthService, db *gorm.DB, emailService service.EmailServiceInterface) *AuthHandler {
 	return &AuthHandler{
 		authService:  authService,
 		db:           db,
@@ -327,15 +324,8 @@ func (h *AuthHandler) ResendVerification(c *gin.Context) {
 		return
 	}
 
-	// Send verification email
-	frontendURL := os.Getenv("FRONTEND_URL")
-	if frontendURL == "" {
-		frontendURL = "http://localhost:8081"
-	}
-
-	verificationLink := fmt.Sprintf("%s/verify-email?token=%s", frontendURL, verificationToken)
-
-	if err := h.emailService.SendVerificationEmail(user.Email, user.Name, verificationLink); err != nil {
+	// Send verification email (pass token, not full link)
+	if err := h.emailService.SendVerificationEmail(user.Email, user.Name, verificationToken); err != nil {
 		c.JSON(http.StatusInternalServerError, models.NewErrorResponse(
 			"email_error",
 			"Failed to send verification email",

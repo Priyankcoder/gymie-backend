@@ -25,9 +25,8 @@ Follow these steps to require the "Backend CI" workflow to pass before any PR ca
    
    - ✅ **Require status checks to pass before merging**
      - ✅ Require branches to be up to date before merging
-     - In the search box, type: `Backend CI` or `build-and-test`
-     - ✅ Select **Backend CI / build-and-test** from the dropdown
-     - ✅ Select **Backend CI / lint** (optional but recommended)
+     - In the search box, type: `Backend CI` or `build`
+     - ✅ Select **Backend CI / Build Backend** from the dropdown
    
    - ✅ **Require conversation resolution before merging** (optional)
    
@@ -41,9 +40,8 @@ Follow these steps to require the "Backend CI" workflow to pass before any PR ca
 2. Make a change to any backend file
 3. Push and create a PR
 4. You should see:
-   - ✅ "Backend CI / build-and-test" check running
-   - ✅ "Backend CI / lint" check running
-   - 🔒 **Merge button disabled** until checks pass
+   - ✅ "Backend CI / Build Backend" check running
+   - 🔒 **Merge button disabled** until check passes
 
 ### Visual Guide
 
@@ -53,31 +51,21 @@ GitHub Repository Settings
 │   └── Branch protection rules
 │       └── Rule for: main
 │           ├── ✅ Require pull request reviews
-│           ├── ✅ Require status checks (SELECT THESE):
-│           │   ├── ✅ Backend CI / build-and-test
-│           │   └── ✅ Backend CI / lint
+│           ├── ✅ Require status checks:
+│           │   └── ✅ Backend CI / Build Backend
 │           └── ✅ Do not allow bypassing
 ```
 
 ### What the Workflow Checks
 
-The `Backend CI` workflow now checks:
+The `Backend CI` workflow checks:
 
-#### **build-and-test job:**
-- ✅ Go dependencies are valid
-- ✅ Code formatting (`go fmt`)
-- ✅ Static analysis (`go vet`)
-- ✅ Code builds successfully
-- ✅ API binary compiles
-- ✅ All tests pass
-- ✅ Race conditions detected
-- ✅ Code coverage generated
+✅ **Build Job:**
+- Go dependencies download successfully
+- All packages build without errors
+- API binary compiles successfully
 
-#### **lint job:**
-- ✅ Code quality (`golangci-lint`)
-- ✅ Best practices
-- ✅ Common mistakes
-- ✅ Security issues
+**That's it!** No linting, no formatting - just verifies the code builds.
 
 ### Additional Protection Options (Recommended)
 
@@ -93,50 +81,24 @@ The `Backend CI` workflow now checks:
 - ✅ **Require signed commits**
   - Ensures authenticity of commits
 
-### For Team/Organization Repos
-
-If you have a team:
-
-1. **CODEOWNERS file** (`.github/CODEOWNERS`):
-   ```
-   # Backend code requires review from backend team
-   * @your-org/backend-team
-   
-   # All Go files require review
-   *.go @your-org/backend-team
-   ```
-
-2. **Required Reviewers**: Set minimum number of approvals
-
-3. **Review Assignments**: Auto-assign reviewers
-
 ### Testing Branch Protection
 
-#### Test 1: PR with Passing Tests
+#### Test 1: PR with Valid Code
 ```bash
 git checkout -b feature/working-code
 # Make a valid change
 git commit -am "Add new feature"
 git push origin feature/working-code
-# Create PR → Should allow merge after CI passes
+# Create PR → Should allow merge after build passes
 ```
 
-#### Test 2: PR with Failing Tests
+#### Test 2: PR with Broken Code
 ```bash
 git checkout -b feature/broken-code
-# Introduce a bug or failing test
+# Introduce a syntax error or import issue
 git commit -am "Add broken code"
 git push origin feature/broken-code
 # Create PR → Should BLOCK merge until fixed
-```
-
-#### Test 3: PR with Unformatted Code
-```bash
-git checkout -b feature/bad-formatting
-# Add unformatted Go code
-git commit -am "Add unformatted code"
-git push origin feature/bad-formatting
-# Create PR → Should FAIL go fmt check
 ```
 
 ### Workflow Triggers
@@ -144,7 +106,7 @@ git push origin feature/bad-formatting
 The CI runs on:
 - ✅ **Push to main** (after merge)
 - ✅ **Pull Request to main** (before merge)
-- ✅ **All backend changes** (since backend and frontend are separate repos)
+- ✅ **All changes** (runs on every commit)
 
 ### Troubleshooting
 
@@ -159,16 +121,16 @@ The CI runs on:
 #### Issue: Can't find the check in the dropdown
 
 **Solution:**
-1. Type the exact name: `build-and-test` or `lint`
+1. Type: `Build Backend`
 2. Make sure you've pushed the `.github/workflows/go.yml` file
 3. Check Actions tab to see if workflow ran
 
-#### Issue: Workflow fails but I want to merge anyway
+#### Issue: Build fails but I want to merge anyway
 
 **Not Recommended**, but if necessary:
 1. As repo admin, you can temporarily disable the rule
 2. OR add yourself to bypass list
-3. OR fix the code to pass the checks (recommended!)
+3. OR fix the code to build (recommended!)
 
 ### CI/CD Pipeline Overview
 
@@ -179,11 +141,9 @@ GitHub detects changes
         ↓
 Backend CI workflow triggers
         ↓
-    ┌─────────┴─────────┐
-    ↓                   ↓
-build-and-test       lint
-    ↓                   ↓
-Both must pass ✅
+Build Backend job runs
+        ↓
+✅ Build succeeds
         ↓
 PR can be merged 🎉
         ↓
@@ -195,25 +155,23 @@ Render auto-deploys
 ### Benefits
 
 1. **Prevents Broken Code**: Can't merge if build fails
-2. **Code Quality**: Ensures formatting and linting standards
-3. **Test Coverage**: All tests must pass
-4. **Security**: Catches race conditions and common bugs
-5. **Team Confidence**: Everyone knows main branch works
+2. **Fast Feedback**: Quick build-only check (~1-2 minutes)
+3. **Simple**: No complex linting rules to configure
+4. **Team Confidence**: Main branch always builds
 
 ### Cost
 
 - **Free for public repos**
 - **Free tier for private repos**: 2,000 CI minutes/month
-- Typical run time: ~2-3 minutes per PR
-- Can do ~600+ PRs per month on free tier
+- Typical run time: ~1-2 minutes per PR
+- Can do ~1000+ PRs per month on free tier
 
 ### Next Steps
 
 1. ✅ Set up branch protection (follow steps above)
 2. ✅ Test with a sample PR
-3. ✅ Add CODEOWNERS if team repo
-4. ✅ Configure Codecov (optional, for coverage reports)
-5. ✅ Add status badge to README
+3. ✅ Add CODEOWNERS if team repo (optional)
+4. ✅ Add status badge to README (optional)
 
 ### Status Badge for README
 
@@ -227,11 +185,13 @@ Replace `YOUR-USERNAME` with your GitHub username.
 
 ---
 
-**Note:** The backend and frontend are maintained in separate repositories:
-- Backend: `Gymie-backend` (this repo)
-- Frontend: `Gymie-frontend` (separate repo)
+**Note:** This workflow only checks if the code builds. It does NOT check:
+- Code formatting
+- Linting/code quality
+- Tests
+- Code coverage
 
-Each repository should have its own CI/CD workflows and branch protection rules.
+If you want these checks later, they can be added back to the workflow.
 
 ---
 
