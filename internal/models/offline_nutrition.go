@@ -1,4 +1,3 @@
-
 package models
 
 import (
@@ -43,17 +42,17 @@ func (DishNutritionMaster) TableName() string {
 
 // UserCorrection represents a user's correction
 type UserCorrection struct {
-	ID                uint      `json:"id" gorm:"primaryKey"`
-	UserID            uint      `json:"user_id" gorm:"not null;index"`
-	ImageHash         string    `json:"image_hash" gorm:"not null;index"`
-	PredictedDishID   string    `json:"predicted_dish_id" gorm:"not null;index"`
-	CorrectedDishID   *string   `json:"corrected_dish_id,omitempty"`
-	PredictedPortion  string    `json:"predicted_portion" gorm:"not null"`
-	CorrectedPortion  *string   `json:"corrected_portion,omitempty"`
-	Confidence        float64   `json:"confidence" gorm:"not null"`
-	DeviceType        string    `json:"device_type" gorm:"not null"` // android, ios, web
-	AppVersion        string    `json:"app_version"`
-	CreatedAt         time.Time `json:"created_at"`
+	ID               uint      `json:"id" gorm:"primaryKey"`
+	UserID           uint      `json:"user_id" gorm:"not null;index"`
+	ImageHash        string    `json:"image_hash" gorm:"not null;index"`
+	PredictedDishID  string    `json:"predicted_dish_id" gorm:"not null;index"`
+	CorrectedDishID  *string   `json:"corrected_dish_id,omitempty"`
+	PredictedPortion string    `json:"predicted_portion" gorm:"not null"`
+	CorrectedPortion *string   `json:"corrected_portion,omitempty"`
+	Confidence       float64   `json:"confidence" gorm:"not null"`
+	DeviceType       string    `json:"device_type" gorm:"not null"` // android, ios, web
+	AppVersion       string    `json:"app_version"`
+	CreatedAt        time.Time `json:"created_at"`
 }
 
 // TableName specifies the table name for GORM
@@ -102,16 +101,16 @@ type CorrectionData struct {
 
 // SyncCorrectionsResponse represents the correction sync response
 type SyncCorrectionsResponse struct {
-	Synced   int      `json:"synced"`
-	Failed   int      `json:"failed"`
-	Errors   []string `json:"errors,omitempty"`
+	Synced int      `json:"synced"`
+	Failed int      `json:"failed"`
+	Errors []string `json:"errors,omitempty"`
 }
 
 // ModelVersionsResponse represents the model versions response
 type ModelVersionsResponse struct {
-	VisionModel    *ModelVersionInfo `json:"vision_model"`
-	NutritionDB    *ModelVersionInfo `json:"nutrition_db"`
-	ServerTime     time.Time         `json:"server_time"`
+	VisionModel *ModelVersionInfo `json:"vision_model"`
+	NutritionDB *ModelVersionInfo `json:"nutrition_db"`
+	ServerTime  time.Time         `json:"server_time"`
 }
 
 // ModelVersionInfo represents a single model version info
@@ -146,10 +145,10 @@ type DishSearchResponse struct {
 
 // DishSearchResult represents a single dish search result
 type DishSearchResult struct {
-	DishID      string   `json:"dish_id"`
-	DisplayName string   `json:"display_name"`
-	Category    string   `json:"category"`
-	Cuisine     string   `json:"cuisine"`
-	Aliases     []string `json:"aliases"`
+	DishID      string               `json:"dish_id"`
+	DisplayName string               `json:"display_name"`
+	Category    string               `json:"category"`
+	Cuisine     string               `json:"cuisine"`
+	Aliases     []string             `json:"aliases"`
 	Nutrition   *DishNutritionMaster `json:"nutrition,omitempty"`
 }

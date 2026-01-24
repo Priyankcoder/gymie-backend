@@ -1,4 +1,3 @@
-
 package services
 
 import (
@@ -27,7 +26,7 @@ func NewEmailService() *EmailService {
 		fromEmail:    getEnv("FROM_EMAIL", "noreply@gymie.com"),
 		fromName:     getEnv("FROM_NAME", "Gymie"),
 	}
-	
+
 	// Debug logging
 	fmt.Printf("\n=== EMAIL SERVICE INITIALIZED ===\n")
 	fmt.Printf("SMTP Host: %s\n", es.smtpHost)
@@ -37,7 +36,7 @@ func NewEmailService() *EmailService {
 	fmt.Printf("From Email: %s\n", es.fromEmail)
 	fmt.Printf("From Name: %s\n", es.fromName)
 	fmt.Printf("================================\n\n")
-	
+
 	return es
 }
 
@@ -69,7 +68,7 @@ func getEnvInt(key string, defaultValue int) int {
 
 func (s *EmailService) SendVerificationEmail(toEmail, userName, verificationLink string) error {
 	subject := "Verify Your Gymie Account"
-	
+
 	body := fmt.Sprintf(`
 <!DOCTYPE html>
 <html lang="en">
@@ -164,7 +163,7 @@ func (s *EmailService) sendEmail(to, subject, body string) error {
 	fmt.Printf("From: %s <%s>\n", s.fromName, s.fromEmail)
 	fmt.Printf("SMTP: %s:%d\n", s.smtpHost, s.smtpPort)
 	fmt.Printf("==================\n")
-	
+
 	m := mail.NewMessage()
 	m.SetHeader("From", fmt.Sprintf("%s <%s>", s.fromName, s.fromEmail))
 	m.SetHeader("To", to)
@@ -172,7 +171,7 @@ func (s *EmailService) sendEmail(to, subject, body string) error {
 	m.SetBody("text/html", body)
 
 	d := mail.NewDialer(s.smtpHost, s.smtpPort, s.smtpUsername, s.smtpPassword)
-	
+
 	// Enable TLS with proper ServerName
 	d.TLSConfig = &tls.Config{
 		ServerName:         s.smtpHost,
@@ -185,14 +184,14 @@ func (s *EmailService) sendEmail(to, subject, body string) error {
 		fmt.Printf("❌ Email send failed: %v\n", err)
 		return err
 	}
-	
+
 	fmt.Printf("✅ Email sent successfully!\n")
 	return nil
 }
 
 func (s *EmailService) SendPasswordResetEmail(toEmail, userName, resetLink string) error {
 	subject := "Reset Your Gymie Password"
-	
+
 	body := fmt.Sprintf(`
 <!DOCTYPE html>
 <html lang="en">

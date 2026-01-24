@@ -1,4 +1,3 @@
-
 package handlers
 
 import (
@@ -125,7 +124,7 @@ func (h *WorkoutHandler) List(c *gin.Context) {
 	if dateQuery.StartDate != "" && dateQuery.EndDate != "" {
 		startDate, err1 := time.Parse("2006-01-02", dateQuery.StartDate)
 		endDate, err2 := time.Parse("2006-01-02", dateQuery.EndDate)
-		
+
 		if err1 == nil && err2 == nil {
 			workouts, err := h.workoutService.GetByDateRange(c.Request.Context(), userID, startDate, endDate)
 			if err != nil {

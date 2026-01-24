@@ -1,4 +1,3 @@
-
 package service
 
 import (
@@ -24,12 +23,12 @@ type WorkoutPlanService interface {
 	SetActive(ctx context.Context, id uint, userID uint) error
 	Clone(ctx context.Context, id uint, userID uint, newName string) (*models.WorkoutPlan, error)
 	SetRecurrence(ctx context.Context, id uint, userID uint, req *models.SetRecurrenceRequest) error
-	
+
 	// Day operations
 	UpdateDay(ctx context.Context, planID uint, dayID uint, userID uint, exercises []models.TemplateExercise) error
 	AddDay(ctx context.Context, planID uint, userID uint, req *models.WorkoutPlanDayRequest) error
 	RemoveDay(ctx context.Context, planID uint, dayID uint, userID uint) error
-	
+
 	// Scheduled workout operations
 	CreateScheduled(ctx context.Context, userID uint, req *models.ScheduledWorkoutCreateRequest) (*models.ScheduledWorkout, error)
 	GetScheduledByID(ctx context.Context, id uint, userID uint) (*models.ScheduledWorkout, error)
@@ -62,7 +61,7 @@ func (s *workoutPlanService) Create(ctx context.Context, userID uint, req *model
 			return nil, err
 		}
 	}
-	
+
 	plan := &models.WorkoutPlan{
 		UserID:      userID,
 		Name:        req.Name,
@@ -71,14 +70,14 @@ func (s *workoutPlanService) Create(ctx context.Context, userID uint, req *model
 		IsActive:    req.IsActive,
 		Color:       req.Color,
 	}
-	
+
 	// Convert days
 	for _, dayReq := range req.Days {
 		exercisesJSON, err := json.Marshal(dayReq.Exercises)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal exercises: %w", err)
 		}
-		
+
 		day := models.WorkoutPlanDay{
 			DayIndex:   dayReq.DayIndex,
 			Name:       dayReq.Name,
@@ -89,11 +88,11 @@ func (s *workoutPlanService) Create(ctx context.Context, userID uint, req *model
 		}
 		plan.Days = append(plan.Days, day)
 	}
-	
+
 	if err := s.planRepo.Create(ctx, plan); err != nil {
 		return nil, err
 	}
-	
+
 	return plan, nil
 }
 
@@ -118,7 +117,7 @@ func (s *workoutPlanService) Update(ctx context.Context, id uint, userID uint, r
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if req.Name != nil {
 		plan.Name = *req.Name
 	}
@@ -140,14 +139,14 @@ func (s *workoutPlanService) Update(ctx context.Context, id uint, userID uint, r
 	if req.Color != nil {
 		plan.Color = *req.Color
 	}
-	
+
 	// Handle days update
 	if req.Days != nil && len(req.Days) > 0 {
 		// Delete existing days
 		if err := s.planRepo.DeleteDays(ctx, id); err != nil {
 			return nil, fmt.Errorf("failed to delete existing days: %w", err)
 		}
-		
+
 		// Create new days
 		var days []models.WorkoutPlanDay
 		for _, dayReq := range req.Days {
@@ -155,7 +154,7 @@ func (s *workoutPlanService) Update(ctx context.Context, id uint, userID uint, r
 			if err != nil {
 				return nil, fmt.Errorf("failed to marshal exercises: %w", err)
 			}
-			
+
 			day := models.WorkoutPlanDay{
 				PlanID:    id,
 				DayIndex:  dayReq.DayIndex,
@@ -169,16 +168,16 @@ func (s *workoutPlanService) Update(ctx context.Context, id uint, userID uint, r
 			}
 			days = append(days, day)
 		}
-		
+
 		if err := s.planRepo.CreateDays(ctx, days); err != nil {
 			return nil, fmt.Errorf("failed to create days: %w", err)
 		}
 	}
-	
+
 	if err := s.planRepo.Update(ctx, plan); err != nil {
 		return nil, err
 	}
-	
+
 	// Reload plan with updated days
 	return s.planRepo.GetByID(ctx, id, userID)
 }
@@ -189,7 +188,7 @@ func (s *workoutPlanService) Delete(ctx context.Context, id uint, userID uint) e
 	if err := s.planRepo.DeleteScheduledByPlan(ctx, id, userID); err != nil {
 		return err
 	}
-	
+
 	return s.planRepo.Delete(ctx, id, userID)
 }
 
@@ -199,13 +198,13 @@ func (s *workoutPlanService) SetActive(ctx context.Context, id uint, userID uint
 	if err := s.planRepo.SetActive(ctx, id, userID); err != nil {
 		return err
 	}
-	
+
 	// Get the plan to check if it has recurrence settings
 	plan, err := s.planRepo.GetByID(ctx, id, userID)
 	if err != nil {
 		return err
 	}
-	
+
 	// If the plan has recurrence settings, regenerate scheduled workouts
 	if plan.Recurrence != nil && len(plan.Recurrence) > 0 {
 		var recurrence models.PlanRecurrence
@@ -217,26 +216,26 @@ func (s *workoutPlanService) SetActive(ctx context.Context, id uint, userID uint
 					startDate = parsedStart
 				}
 			}
-			
+
 			endDate := startDate.AddDate(0, 0, 84) // 12 weeks
 			if recurrence.EndDate != nil && *recurrence.EndDate != "" {
 				if parsedEnd, err := time.Parse("2006-01-02", *recurrence.EndDate); err == nil {
 					endDate = parsedEnd
 				}
 			}
-			
+
 			// Generate scheduled workouts
 			req := &models.GenerateScheduleRequest{
 				PlanID:    id,
 				StartDate: startDate.Format("2006-01-02"),
 				EndDate:   endDate.Format("2006-01-02"),
 			}
-			
+
 			// Ignore errors from generation - plan is already active
 			s.GenerateFromRecurrence(ctx, userID, req)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -246,7 +245,7 @@ func (s *workoutPlanService) Clone(ctx context.Context, id uint, userID uint, ne
 	if err != nil {
 		return nil, err
 	}
-	
+
 	clone := &models.WorkoutPlan{
 		UserID:      userID,
 		Name:        newName,
@@ -256,7 +255,7 @@ func (s *workoutPlanService) Clone(ctx context.Context, id uint, userID uint, ne
 		Color:       original.Color,
 		Days:        make([]models.WorkoutPlanDay, len(original.Days)),
 	}
-	
+
 	// Clone days
 	for i, day := range original.Days {
 		clone.Days[i] = models.WorkoutPlanDay{
@@ -268,11 +267,11 @@ func (s *workoutPlanService) Clone(ctx context.Context, id uint, userID uint, ne
 			Notes:      day.Notes,
 		}
 	}
-	
+
 	if err := s.planRepo.Create(ctx, clone); err != nil {
 		return nil, err
 	}
-	
+
 	return clone, nil
 }
 
@@ -282,7 +281,7 @@ func (s *workoutPlanService) SetRecurrence(ctx context.Context, id uint, userID 
 	if err != nil {
 		return err
 	}
-	
+
 	if req.Recurrence != nil {
 		recurrenceJSON, err := json.Marshal(req.Recurrence)
 		if err != nil {
@@ -292,11 +291,11 @@ func (s *workoutPlanService) SetRecurrence(ctx context.Context, id uint, userID 
 	} else {
 		plan.Recurrence = nil
 	}
-	
+
 	if err := s.planRepo.Update(ctx, plan); err != nil {
 		return err
 	}
-	
+
 	// If recurrence is set, generate scheduled workouts
 	if req.Recurrence != nil {
 		endDate := req.Recurrence.StartDate
@@ -307,7 +306,7 @@ func (s *workoutPlanService) SetRecurrence(ctx context.Context, id uint, userID 
 			startTime, _ := time.Parse("2006-01-02", req.Recurrence.StartDate)
 			endDate = startTime.AddDate(0, 0, 90).Format("2006-01-02")
 		}
-		
+
 		_, err := s.GenerateFromRecurrence(ctx, userID, &models.GenerateScheduleRequest{
 			PlanID:    id,
 			StartDate: req.Recurrence.StartDate,
@@ -317,7 +316,7 @@ func (s *workoutPlanService) SetRecurrence(ctx context.Context, id uint, userID 
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
@@ -327,7 +326,7 @@ func (s *workoutPlanService) UpdateDay(ctx context.Context, planID uint, dayID u
 	if err != nil {
 		return err
 	}
-	
+
 	// Find the day
 	var day *models.WorkoutPlanDay
 	for i := range plan.Days {
@@ -336,18 +335,18 @@ func (s *workoutPlanService) UpdateDay(ctx context.Context, planID uint, dayID u
 			break
 		}
 	}
-	
+
 	if day == nil {
 		return errors.New("day not found")
 	}
-	
+
 	exercisesJSON, err := json.Marshal(exercises)
 	if err != nil {
 		return fmt.Errorf("failed to marshal exercises: %w", err)
 	}
-	
+
 	day.Exercises = exercisesJSON
-	
+
 	return s.planRepo.UpdateDay(ctx, day)
 }
 
@@ -357,12 +356,12 @@ func (s *workoutPlanService) AddDay(ctx context.Context, planID uint, userID uin
 	if err != nil {
 		return err
 	}
-	
+
 	exercisesJSON, err := json.Marshal(req.Exercises)
 	if err != nil {
 		return fmt.Errorf("failed to marshal exercises: %w", err)
 	}
-	
+
 	day := &models.WorkoutPlanDay{
 		PlanID:     plan.ID,
 		DayIndex:   req.DayIndex,
@@ -372,7 +371,7 @@ func (s *workoutPlanService) AddDay(ctx context.Context, planID uint, userID uin
 		Exercises:  exercisesJSON,
 		Notes:      req.Notes,
 	}
-	
+
 	return s.planRepo.CreateDay(ctx, day)
 }
 
@@ -382,7 +381,7 @@ func (s *workoutPlanService) RemoveDay(ctx context.Context, planID uint, dayID u
 	if err != nil {
 		return err
 	}
-	
+
 	return s.planRepo.DeleteDay(ctx, dayID, planID)
 }
 
@@ -396,11 +395,11 @@ func (s *workoutPlanService) CreateScheduled(ctx context.Context, userID uint, r
 		Status:    "scheduled",
 		Notes:     req.Notes,
 	}
-	
+
 	if err := s.planRepo.CreateScheduled(ctx, scheduled); err != nil {
 		return nil, err
 	}
-	
+
 	return scheduled, nil
 }
 
@@ -420,12 +419,12 @@ func (s *workoutPlanService) GetScheduledByDateRange(ctx context.Context, userID
 	if err != nil {
 		return nil, fmt.Errorf("invalid start date: %w", err)
 	}
-	
+
 	end, err := time.Parse("2006-01-02", endDate)
 	if err != nil {
 		return nil, fmt.Errorf("invalid end date: %w", err)
 	}
-	
+
 	return s.planRepo.GetScheduledByDateRange(ctx, userID, start, end)
 }
 
@@ -435,7 +434,7 @@ func (s *workoutPlanService) GetScheduledByDate(ctx context.Context, userID uint
 	if err != nil {
 		return nil, fmt.Errorf("invalid date: %w", err)
 	}
-	
+
 	return s.planRepo.GetScheduledByDate(ctx, userID, dateTime)
 }
 
@@ -445,7 +444,7 @@ func (s *workoutPlanService) GetTodaysWorkout(ctx context.Context, userID uint) 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if scheduled == nil {
 		return map[string]interface{}{
 			"scheduled": nil,
@@ -453,12 +452,12 @@ func (s *workoutPlanService) GetTodaysWorkout(ctx context.Context, userID uint) 
 			"day":       nil,
 		}, nil
 	}
-	
+
 	plan, err := s.planRepo.GetByID(ctx, scheduled.PlanID, userID)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Find the day
 	var day *models.WorkoutPlanDay
 	for i := range plan.Days {
@@ -467,7 +466,7 @@ func (s *workoutPlanService) GetTodaysWorkout(ctx context.Context, userID uint) 
 			break
 		}
 	}
-	
+
 	return map[string]interface{}{
 		"scheduled": scheduled,
 		"plan":      plan,
@@ -481,7 +480,7 @@ func (s *workoutPlanService) UpdateScheduledStatus(ctx context.Context, id uint,
 	if err != nil {
 		return nil, err
 	}
-	
+
 	scheduled.Status = req.Status
 	if req.WorkoutID != nil {
 		scheduled.WorkoutID = req.WorkoutID
@@ -489,11 +488,11 @@ func (s *workoutPlanService) UpdateScheduledStatus(ctx context.Context, id uint,
 	if req.Notes != "" {
 		scheduled.Notes = req.Notes
 	}
-	
+
 	if err := s.planRepo.UpdateScheduled(ctx, scheduled); err != nil {
 		return nil, err
 	}
-	
+
 	return scheduled, nil
 }
 
@@ -508,46 +507,46 @@ func (s *workoutPlanService) GenerateFromRecurrence(ctx context.Context, userID 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if plan.Recurrence == nil {
 		return nil, errors.New("plan has no recurrence set")
 	}
-	
+
 	var recurrence models.PlanRecurrence
 	if err := json.Unmarshal([]byte(plan.Recurrence), &recurrence); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal recurrence: %w", err)
 	}
-	
+
 	startDate, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
 		return nil, fmt.Errorf("invalid start date: %w", err)
 	}
-	
+
 	endDate, err := time.Parse("2006-01-02", req.EndDate)
 	if err != nil {
 		return nil, fmt.Errorf("invalid end date: %w", err)
 	}
-	
+
 	// Clear existing scheduled workouts in this range
 	existing, err := s.planRepo.GetScheduledByDateRange(ctx, userID, startDate, endDate)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	for _, sw := range existing {
 		if sw.PlanID == plan.ID {
 			s.planRepo.DeleteScheduled(ctx, sw.ID, userID)
 		}
 	}
-	
+
 	// Generate new scheduled workouts
 	var scheduled []models.ScheduledWorkout
 	currentDate := startDate
 	dayIndex := 0
-	
+
 	for !currentDate.After(endDate) {
 		weekday := int(currentDate.Weekday())
-		
+
 		// Check if this is a rest day
 		isRestDay := false
 		for _, rd := range recurrence.RestDays {
@@ -556,11 +555,11 @@ func (s *workoutPlanService) GenerateFromRecurrence(ctx context.Context, userID 
 				break
 			}
 		}
-		
+
 		if !isRestDay {
 			// Find the appropriate day from the plan
 			planDay := plan.Days[dayIndex%len(plan.Days)]
-			
+
 			scheduled = append(scheduled, models.ScheduledWorkout{
 				UserID:    userID,
 				PlanID:    plan.ID,
@@ -568,19 +567,19 @@ func (s *workoutPlanService) GenerateFromRecurrence(ctx context.Context, userID 
 				Date:      currentDate,
 				Status:    "scheduled",
 			})
-			
+
 			dayIndex++
 		}
-		
+
 		currentDate = currentDate.AddDate(0, 0, 1)
 	}
-	
+
 	if len(scheduled) > 0 {
 		if err := s.planRepo.BulkCreateScheduled(ctx, scheduled); err != nil {
 			return nil, err
 		}
 	}
-	
+
 	return scheduled, nil
 }
 

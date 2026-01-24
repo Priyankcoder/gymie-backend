@@ -1,4 +1,3 @@
-
 package middleware
 
 import (
@@ -17,7 +16,7 @@ func ErrorHandler() gin.HandlerFunc {
 		// Check if there are any errors
 		if len(c.Errors) > 0 {
 			err := c.Errors.Last()
-			
+
 			// Log the error
 			log.Printf("Error: %v", err.Err)
 

@@ -1,4 +1,3 @@
-
 package models
 
 import (
@@ -23,8 +22,8 @@ type WorkoutPlan struct {
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relationships
-	User     User             `gorm:"foreignKey:UserID" json:"-"`
-	Days     []WorkoutPlanDay `gorm:"foreignKey:PlanID;constraint:OnDelete:CASCADE" json:"days,omitempty"`
+	User      User               `gorm:"foreignKey:UserID" json:"-"`
+	Days      []WorkoutPlanDay   `gorm:"foreignKey:PlanID;constraint:OnDelete:CASCADE" json:"days,omitempty"`
 	Scheduled []ScheduledWorkout `gorm:"foreignKey:PlanID;constraint:OnDelete:CASCADE" json:"-"`
 }
 
@@ -54,17 +53,17 @@ type ScheduledWorkout struct {
 	PlanDayID uint           `gorm:"not null" json:"planDayId"`
 	Date      time.Time      `gorm:"not null;index" json:"date"`
 	Status    string         `gorm:"not null;default:scheduled" json:"status"` // scheduled, completed, skipped, rescheduled
-	WorkoutID *uint          `json:"workoutId,omitempty"` // Reference to completed workout
+	WorkoutID *uint          `json:"workoutId,omitempty"`                      // Reference to completed workout
 	Notes     string         `json:"notes,omitempty"`
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relationships
-	User      User           `gorm:"foreignKey:UserID" json:"-"`
-	Plan      WorkoutPlan    `gorm:"foreignKey:PlanID" json:"-"`
-	PlanDay   WorkoutPlanDay `gorm:"foreignKey:PlanDayID" json:"-"`
-	Workout   *Workout       `gorm:"foreignKey:WorkoutID" json:"workout,omitempty"`
+	User    User           `gorm:"foreignKey:UserID" json:"-"`
+	Plan    WorkoutPlan    `gorm:"foreignKey:PlanID" json:"-"`
+	PlanDay WorkoutPlanDay `gorm:"foreignKey:PlanDayID" json:"-"`
+	Workout *Workout       `gorm:"foreignKey:WorkoutID" json:"workout,omitempty"`
 }
 
 // Request/Response DTOs
@@ -75,19 +74,19 @@ type PlanRecurrence struct {
 	Interval      int      `json:"interval"`
 	StartDate     string   `json:"startDate"`
 	EndDate       *string  `json:"endDate,omitempty"`
-	RestDays      []int    `json:"restDays"`       // Day indices that are rest days
+	RestDays      []int    `json:"restDays"` // Day indices that are rest days
 	ExcludedDates []string `json:"excludedDates,omitempty"`
 }
 
 // TemplateExercise represents an exercise template
 type TemplateExercise struct {
-	Name         string  `json:"name"`
-	TargetSets   int     `json:"targetSets"`
+	Name         string      `json:"name"`
+	TargetSets   int         `json:"targetSets"`
 	TargetReps   interface{} `json:"targetReps"` // Can be int or string like "8-12"
-	TargetWeight *float64 `json:"targetWeight,omitempty"`
-	RestSeconds  *int    `json:"restSeconds,omitempty"`
-	Notes        string  `json:"notes,omitempty"`
-	SupersetWith string  `json:"supersetWith,omitempty"`
+	TargetWeight *float64    `json:"targetWeight,omitempty"`
+	RestSeconds  *int        `json:"restSeconds,omitempty"`
+	Notes        string      `json:"notes,omitempty"`
+	SupersetWith string      `json:"supersetWith,omitempty"`
 }
 
 // WorkoutPlanCreateRequest represents the request to create a workout plan
@@ -102,21 +101,21 @@ type WorkoutPlanCreateRequest struct {
 
 // WorkoutPlanDayRequest represents a day in the plan creation request
 type WorkoutPlanDayRequest struct {
-	DayIndex   int                 `json:"dayIndex" binding:"required"`
-	Name       string              `json:"name" binding:"required"`
-	IsRestDay  bool                `json:"isRestDay"`
-	TemplateID *uint               `json:"templateId,omitempty"`
-	Exercises  []TemplateExercise  `json:"exercises"`
-	Notes      string              `json:"notes,omitempty"`
+	DayIndex   int                `json:"dayIndex" binding:"required"`
+	Name       string             `json:"name" binding:"required"`
+	IsRestDay  bool               `json:"isRestDay"`
+	TemplateID *uint              `json:"templateId,omitempty"`
+	Exercises  []TemplateExercise `json:"exercises"`
+	Notes      string             `json:"notes,omitempty"`
 }
 
 // WorkoutPlanUpdateRequest represents the request to update a workout plan
 type WorkoutPlanUpdateRequest struct {
-	Name        *string                  `json:"name,omitempty"`
-	Description *string                  `json:"description,omitempty"`
-	Type        *string                  `json:"type,omitempty"`
-	IsActive    *bool                    `json:"isActive,omitempty"`
-	Color       *string                  `json:"color,omitempty"`
+	Name        *string                 `json:"name,omitempty"`
+	Description *string                 `json:"description,omitempty"`
+	Type        *string                 `json:"type,omitempty"`
+	IsActive    *bool                   `json:"isActive,omitempty"`
+	Color       *string                 `json:"color,omitempty"`
 	Days        []WorkoutPlanDayRequest `json:"days,omitempty"`
 }
 

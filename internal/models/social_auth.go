@@ -1,4 +1,3 @@
-
 package models
 
 // GoogleSignInRequest represents the Google sign-in request
@@ -18,7 +17,7 @@ type AppleSignInRequest struct {
 
 // GoogleTokenInfo represents the validated Google token information
 type GoogleTokenInfo struct {
-	Sub           string `json:"sub"`            // Google user ID
+	Sub           string `json:"sub"` // Google user ID
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
 	Name          string `json:"name"`

@@ -1,4 +1,3 @@
-
 package utils
 
 import (
@@ -18,7 +17,7 @@ type Claims struct {
 // GenerateToken generates a new JWT token for a user
 func GenerateToken(userID uint, email string, secret string, expirationHours int) (string, error) {
 	expirationTime := time.Now().Add(time.Duration(expirationHours) * time.Hour)
-	
+
 	claims := &Claims{
 		UserID: userID,
 		Email:  email,
@@ -41,7 +40,7 @@ func GenerateToken(userID uint, email string, secret string, expirationHours int
 // ValidateToken validates a JWT token and returns the claims
 func ValidateToken(tokenString string, secret string) (*Claims, error) {
 	claims := &Claims{}
-	
+
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])

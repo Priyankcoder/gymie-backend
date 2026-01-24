@@ -19,17 +19,17 @@ type WorkoutRepository interface {
 	GetByDateRange(ctx context.Context, userID uint, startDate, endDate time.Time) ([]models.Workout, error)
 	Update(ctx context.Context, workout *models.Workout) error
 	Delete(ctx context.Context, id uint, userID uint) error
-	
+
 	// Exercise operations
 	CreateExercise(ctx context.Context, exercise *models.Exercise) error
 	UpdateExercise(ctx context.Context, exercise *models.Exercise) error
 	DeleteExercise(ctx context.Context, id uint, workoutID uint) error
-	
+
 	// Set operations
 	CreateSet(ctx context.Context, set *models.WorkoutSet) error
 	UpdateSet(ctx context.Context, set *models.WorkoutSet) error
 	DeleteSet(ctx context.Context, id uint, exerciseID uint) error
-	
+
 	// Stats
 	GetWorkoutStats(ctx context.Context, userID uint) (*models.WorkoutStatsResponse, error)
 }
@@ -55,7 +55,7 @@ func (r *workoutRepository) Create(ctx context.Context, workout *models.Workout)
 // GetByID retrieves a workout by ID with caching
 func (r *workoutRepository) GetByID(ctx context.Context, id uint, userID uint) (*models.Workout, error) {
 	cacheKey := fmt.Sprintf("workout:%d", id)
-	
+
 	// Try cache first
 	cached, err := r.redis.Get(ctx, cacheKey).Result()
 	if err == nil {
@@ -87,7 +87,7 @@ func (r *workoutRepository) GetByID(ctx context.Context, id uint, userID uint) (
 // GetByUser retrieves workouts for a user with pagination
 func (r *workoutRepository) GetByUser(ctx context.Context, userID uint, query *models.ListQuery) ([]models.Workout, int64, error) {
 	query.SetDefaults()
-	
+
 	var workouts []models.Workout
 	var total int64
 
@@ -124,7 +124,7 @@ func (r *workoutRepository) GetByUser(ctx context.Context, userID uint, query *m
 // GetByDateRange retrieves workouts within a date range
 func (r *workoutRepository) GetByDateRange(ctx context.Context, userID uint, startDate, endDate time.Time) ([]models.Workout, error) {
 	var workouts []models.Workout
-	
+
 	if err := r.db.WithContext(ctx).
 		Preload("Exercises.Sets").
 		Where("user_id = ? AND date BETWEEN ? AND ?", userID, startDate, endDate).

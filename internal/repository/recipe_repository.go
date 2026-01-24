@@ -1,4 +1,3 @@
-
 package repository
 
 import (
@@ -44,7 +43,7 @@ func (r *recipeRepository) GetByID(ctx context.Context, id uint) (*models.Recipe
 // List retrieves recipes with pagination
 func (r *recipeRepository) List(ctx context.Context, query *models.RecipeSearchRequest) ([]models.Recipe, int64, error) {
 	query.SetDefaults()
-	
+
 	var recipes []models.Recipe
 	var total int64
 
@@ -86,7 +85,7 @@ func (r *recipeRepository) List(ctx context.Context, query *models.RecipeSearchR
 // Search performs text search on recipes
 func (r *recipeRepository) Search(ctx context.Context, query *models.RecipeSearchRequest) ([]models.Recipe, int64, error) {
 	query.SetDefaults()
-	
+
 	var recipes []models.Recipe
 	var total int64
 
@@ -134,4 +133,3 @@ func (r *recipeRepository) Update(ctx context.Context, recipe *models.Recipe) er
 func (r *recipeRepository) Delete(ctx context.Context, id uint) error {
 	return r.db.WithContext(ctx).Delete(&models.Recipe{}, id).Error
 }
-

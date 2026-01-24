@@ -1,4 +1,3 @@
-
 package handlers
 
 import (
@@ -180,7 +179,7 @@ func (h *AuthHandler) Me(c *gin.Context) {
 // @Router /auth/verify-email [get]
 func (h *AuthHandler) VerifyEmail(c *gin.Context) {
 	token := c.Query("token")
-	
+
 	if token == "" {
 		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
 			"validation_error",
@@ -230,7 +229,7 @@ func (h *AuthHandler) VerifyEmail(c *gin.Context) {
 	// Verify the email
 	user.EmailVerified = true
 	user.VerificationToken = "" // Clear the token after use
-	
+
 	if err := h.db.Save(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, models.NewErrorResponse(
 			"server_error",
@@ -263,7 +262,7 @@ func (h *AuthHandler) ResendVerification(c *gin.Context) {
 	var req struct {
 		Email string `json:"email" binding:"required,email"`
 	}
-	
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
 			"validation_error",
@@ -315,10 +314,10 @@ func (h *AuthHandler) ResendVerification(c *gin.Context) {
 	}
 
 	tokenExpiry := time.Now().Add(24 * time.Hour)
-	
+
 	user.VerificationToken = verificationToken
 	user.VerificationTokenExpiresAt = tokenExpiry
-	
+
 	if err := h.db.Save(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, models.NewErrorResponse(
 			"server_error",
@@ -333,9 +332,9 @@ func (h *AuthHandler) ResendVerification(c *gin.Context) {
 	if frontendURL == "" {
 		frontendURL = "http://localhost:8081"
 	}
-	
+
 	verificationLink := fmt.Sprintf("%s/verify-email?token=%s", frontendURL, verificationToken)
-	
+
 	if err := h.emailService.SendVerificationEmail(user.Email, user.Name, verificationLink); err != nil {
 		c.JSON(http.StatusInternalServerError, models.NewErrorResponse(
 			"email_error",
@@ -362,7 +361,7 @@ func (h *AuthHandler) ResendVerification(c *gin.Context) {
 // @Router /auth/verification-status/{email} [get]
 func (h *AuthHandler) GetVerificationStatus(c *gin.Context) {
 	email := c.Param("email")
-	
+
 	if email == "" {
 		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
 			"validation_error",
@@ -395,13 +394,13 @@ func (h *AuthHandler) GetVerificationStatus(c *gin.Context) {
 	if !user.EmailVerified && !user.VerificationTokenExpiresAt.IsZero() {
 		// Token creation time = expiry time - 24 hours
 		tokenCreationTime := user.VerificationTokenExpiresAt.Add(-24 * time.Hour)
-		
+
 		// Time since token was created
 		timeSinceCreation := time.Since(tokenCreationTime)
-		
+
 		// Cooldown is 60 seconds from creation
 		cooldownDuration := 60 * time.Second
-		
+
 		if timeSinceCreation < cooldownDuration {
 			cooldownRemaining = int64((cooldownDuration - timeSinceCreation).Seconds())
 		}

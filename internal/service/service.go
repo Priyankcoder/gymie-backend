@@ -1,4 +1,3 @@
-
 package service
 
 import (
@@ -25,7 +24,7 @@ type Services struct {
 func NewServices(repos *repository.Repositories, cfg *config.Config) *Services {
 	// Initialize email service
 	emailService := services.NewEmailService()
-	
+
 	return &Services{
 		Auth:             NewAuthService(repos.User, cfg, emailService),
 		User:             NewUserService(repos.User),

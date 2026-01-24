@@ -1,4 +1,3 @@
-
 package utils
 
 import (
@@ -12,16 +11,16 @@ import (
 
 // GoogleTokenInfo represents the validated Google token information
 type GoogleTokenInfo struct {
-	Sub           string      `json:"sub"`            // Google user ID
+	Sub           string      `json:"sub"` // Google user ID
 	Email         string      `json:"email"`
 	EmailVerified interface{} `json:"email_verified"` // Can be bool or string
 	Name          string      `json:"name"`
 	Picture       string      `json:"picture"`
 	GivenName     string      `json:"given_name"`
 	FamilyName    string      `json:"family_name"`
-	Aud           string      `json:"aud"`            // Client ID
-	Iss           string      `json:"iss"`            // Issuer
-	Exp           interface{} `json:"exp"`            // Expiration time (can be int64 or string)
+	Aud           string      `json:"aud"` // Client ID
+	Iss           string      `json:"iss"` // Issuer
+	Exp           interface{} `json:"exp"` // Expiration time (can be int64 or string)
 }
 
 // IsEmailVerified checks if email is verified (handles both bool and string)
@@ -62,7 +61,7 @@ func VerifyGoogleIDToken(ctx context.Context, idToken string) (*GoogleTokenInfo,
 
 	// Call Google's tokeninfo endpoint
 	url := fmt.Sprintf("https://oauth2.googleapis.com/tokeninfo?id_token=%s", idToken)
-	
+
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)

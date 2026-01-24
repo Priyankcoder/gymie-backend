@@ -1,4 +1,3 @@
-
 package service
 
 import (
@@ -27,7 +26,7 @@ type ProgressService interface {
 	UpdateProgressPhoto(ctx context.Context, id uint, userID uint, req *models.ProgressPhotoUpdateRequest) (*models.ProgressPhoto, error)
 	DeleteProgressPhoto(ctx context.Context, id uint, userID uint) error
 	GenerateUploadURL(ctx context.Context, userID uint, filename string) (*models.UploadURLResponse, error)
-	
+
 	// Weight Entries
 	CreateWeightEntry(ctx context.Context, userID uint, req *models.WeightEntryCreateRequest) (*models.WeightEntry, error)
 	GetWeightEntryByID(ctx context.Context, id uint, userID uint) (*models.WeightEntry, error)
@@ -56,7 +55,7 @@ func (s *progressService) UploadProgressPhoto(ctx context.Context, userID uint, 
 	// Generate unique filename
 	ext := filepath.Ext(file.Filename)
 	filename := fmt.Sprintf("%s%s", uuid.New().String(), ext)
-	
+
 	// Create upload directory if it doesn't exist
 	uploadDir := filepath.Join(s.cfg.StorageBasePath, "progress_photos", fmt.Sprintf("%d", userID))
 	if err := os.MkdirAll(uploadDir, 0755); err != nil {

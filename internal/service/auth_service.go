@@ -1,4 +1,3 @@
-
 package service
 
 import (
@@ -93,13 +92,13 @@ func (s *authService) Register(ctx context.Context, req *models.UserRegisterRequ
 		frontendURL = "http://localhost:8081" // Default for development
 	}
 	verificationLink := fmt.Sprintf("%s/verify-email?token=%s", frontendURL, verificationToken)
-	
+
 	fmt.Printf("=== EMAIL DEBUG ===\n")
 	fmt.Printf("Sending verification email to: %s\n", user.Email)
 	fmt.Printf("User name: %s\n", user.Name)
 	fmt.Printf("Verification link: %s\n", verificationLink)
 	fmt.Printf("==================\n")
-	
+
 	if err := s.emailService.SendVerificationEmail(user.Email, user.Name, verificationLink); err != nil {
 		// Log error but don't fail registration
 		fmt.Printf("❌ FAILED to send verification email: %v\n", err)

@@ -1,4 +1,3 @@
-
 package routes
 
 import (
@@ -32,7 +31,7 @@ func SetupRouter(services *service.Services, cfg *config.Config) *gin.Engine {
 		c.JSON(http.StatusOK, models.NewSuccessResponse(
 			"Server is running",
 			gin.H{
-				"status": "healthy",
+				"status":  "healthy",
 				"version": "1.0.0",
 			},
 		))
@@ -59,7 +58,7 @@ func SetupRouter(services *service.Services, cfg *config.Config) *gin.Engine {
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/google", authHandler.LoginWithGoogle)
-			
+
 			// Email verification routes (public)
 			auth.GET("/verify-email", authHandler.VerifyEmail)
 			auth.POST("/resend-verification", authHandler.ResendVerification)

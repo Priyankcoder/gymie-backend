@@ -1,4 +1,3 @@
-
 package handlers
 
 import (
@@ -74,7 +73,7 @@ func (h *ProgressHandler) UploadProgressPhoto(c *gin.Context) {
 	// Parse form data
 	dateStr := c.PostForm("date")
 	notes := c.PostForm("notes")
-	
+
 	photoDate, err := time.Parse(time.RFC3339, dateStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
@@ -338,7 +337,7 @@ func (h *ProgressHandler) GetWeightEntries(c *gin.Context) {
 	if dateQuery.StartDate != "" && dateQuery.EndDate != "" {
 		startDate, err1 := time.Parse("2006-01-02", dateQuery.StartDate)
 		endDate, err2 := time.Parse("2006-01-02", dateQuery.EndDate)
-		
+
 		if err1 == nil && err2 == nil {
 			entries, err := h.progressService.GetWeightEntriesByDateRange(c.Request.Context(), userID, startDate, endDate)
 			if err != nil {

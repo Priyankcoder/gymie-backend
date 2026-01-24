@@ -1,4 +1,3 @@
-
 package handlers
 
 import (
@@ -38,7 +37,7 @@ func NewEmailVerificationHandler(db *gorm.DB, emailService *services.EmailServic
 // @Router /auth/verify-email [get]
 func (h *EmailVerificationHandler) VerifyEmail(c *gin.Context) {
 	token := c.Query("token")
-	
+
 	if token == "" {
 		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
 			"validation_error",
@@ -88,7 +87,7 @@ func (h *EmailVerificationHandler) VerifyEmail(c *gin.Context) {
 	// Verify the email
 	user.EmailVerified = true
 	user.VerificationToken = "" // Clear the token after use
-	
+
 	if err := h.db.Save(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, models.NewErrorResponse(
 			"server_error",
@@ -122,7 +121,7 @@ func (h *EmailVerificationHandler) ResendVerificationEmail(c *gin.Context) {
 	var req struct {
 		Email string `json:"email" binding:"required,email"`
 	}
-	
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
 			"validation_error",
@@ -174,10 +173,10 @@ func (h *EmailVerificationHandler) ResendVerificationEmail(c *gin.Context) {
 	}
 
 	tokenExpiry := time.Now().Add(24 * time.Hour)
-	
+
 	user.VerificationToken = verificationToken
 	user.VerificationTokenExpiresAt = tokenExpiry
-	
+
 	if err := h.db.Save(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, models.NewErrorResponse(
 			"server_error",
@@ -192,9 +191,9 @@ func (h *EmailVerificationHandler) ResendVerificationEmail(c *gin.Context) {
 	if frontendURL == "" {
 		frontendURL = "http://localhost:8081"
 	}
-	
+
 	verificationLink := fmt.Sprintf("%s/verify-email?token=%s", frontendURL, verificationToken)
-	
+
 	if err := h.emailService.SendVerificationEmail(user.Email, user.Name, verificationLink); err != nil {
 		c.JSON(http.StatusInternalServerError, models.NewErrorResponse(
 			"email_error",
@@ -222,7 +221,7 @@ func (h *EmailVerificationHandler) ResendVerificationEmail(c *gin.Context) {
 // @Router /auth/verification-status [get]
 func (h *EmailVerificationHandler) GetVerificationStatus(c *gin.Context) {
 	email := c.Query("email")
-	
+
 	if email == "" {
 		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
 			"validation_error",
