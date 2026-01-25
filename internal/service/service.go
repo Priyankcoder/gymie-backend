@@ -18,7 +18,7 @@ type Services struct {
 	Progress         ProgressService
 	WorkoutPlan      WorkoutPlanService
 	OfflineNutrition *OfflineNutritionService
-	Email            EmailServiceInterface // SendGrid email service
+	Email            EmailServiceInterface // Brevo email service
 	DB               *gorm.DB
 }
 
@@ -28,19 +28,19 @@ func NewServices(repos *repository.Repositories, cfg *config.Config) *Services {
 	fmt.Println("║              EMAIL SERVICE INITIALIZATION                    ║")
 	fmt.Println("╚══════════════════════════════════════════════════════════════╝")
 	
-	// Initialize SendGrid email service (REQUIRED)
-	if cfg.SendGridAPIKey == "" {
-		fmt.Println("❌ CRITICAL ERROR: SENDGRID_API_KEY not configured!")
-		fmt.Println("   └─ Email service cannot be initialized without SendGrid")
-		fmt.Println("   └─ Please add SENDGRID_API_KEY to your environment variables")
-		panic("SENDGRID_API_KEY environment variable is required")
+	// Initialize Brevo email service (REQUIRED)
+	if cfg.BrevoAPIKey == "" {
+		fmt.Println("❌ CRITICAL ERROR: BREVO_API_KEY not configured!")
+		fmt.Println("   └─ Email service cannot be initialized without Brevo")
+		fmt.Println("   └─ Please add BREVO_API_KEY to your environment variables")
+		panic("BREVO_API_KEY environment variable is required")
 	}
 	
-	fmt.Println("✅ SendGrid API Key detected")
-	fmt.Printf("   └─ Using SendGrid Email Service\n\n")
+	fmt.Println("✅ Brevo API Key detected")
+	fmt.Printf("   └─ Using Brevo Email Service\n\n")
 	
-	// Use SendGrid as the only email service
-	emailService := services.NewSendGridEmailService(cfg)
+	// Use Brevo as the email service
+	emailService := services.NewBrevoEmailService(cfg)
 
 	return &Services{
 		Auth:             NewAuthService(repos.User, cfg, emailService),
@@ -50,7 +50,7 @@ func NewServices(repos *repository.Repositories, cfg *config.Config) *Services {
 		Progress:         NewProgressService(repos.Progress, cfg),
 		WorkoutPlan:      NewWorkoutPlanService(repos.WorkoutPlan),
 		OfflineNutrition: NewOfflineNutritionService(repos.DB),
-		Email:            emailService, // SendGrid email service
+		Email:            emailService, // Brevo email service
 		DB:               repos.DB,
 	}
 }
