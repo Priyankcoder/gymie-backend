@@ -109,12 +109,6 @@ func (s *BrevoEmailService) SendVerificationEmail(toEmail, userName, verificatio
                                     </td>
                                 </tr>
                             </table>
-                            <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
-                                Or copy and paste this link into your browser:
-                            </p>
-                            <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; word-break: break-all; margin: 0 0 30px 0;">
-                                <a href="%s" style="color: #4F46E5; text-decoration: none; font-size: 14px;">%s</a>
-                            </div>
                             <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 8px; margin: 0 0 20px 0;">
                                 <p style="margin: 0; color: #92400e; font-size: 14px; font-weight: 500;">
                                     ⏰ This verification link will expire in 24 hours.
@@ -141,7 +135,7 @@ func (s *BrevoEmailService) SendVerificationEmail(toEmail, userName, verificatio
     </table>
 </body>
 </html>
-	`, userName, verificationLink, verificationLink, verificationLink)
+	`, userName, verificationLink)
 
 	plainTextContent := fmt.Sprintf(`
 Welcome to Gymie, %s!
