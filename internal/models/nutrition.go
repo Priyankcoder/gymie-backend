@@ -104,6 +104,16 @@ type MealUpdateRequest struct {
 	Time *time.Time `json:"time,omitempty"`
 }
 
+// AddMealRequest represents the request to add a meal item to a nutrition day
+type AddMealRequest struct {
+	MealType string `json:"mealType" binding:"required"` // "breakfast", "lunch", "dinner", "snack"
+	Name     string `json:"name" binding:"required"`      // Food item name
+	Calories int    `json:"calories" binding:"required"`
+	Protein  int    `json:"protein"`
+	Carbs    int    `json:"carbs"`
+	Fat      int    `json:"fat"`
+}
+
 // FoodUpdateRequest represents the request to update a food item
 type FoodUpdateRequest struct {
 	Name     *string  `json:"name,omitempty"`

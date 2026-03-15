@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/yourusername/gymie-backend/internal/models"
@@ -18,6 +19,8 @@ type NutritionService interface {
 	Update(ctx context.Context, id uint, userID uint, req *models.NutritionDayUpdateRequest) (*models.NutritionDay, error)
 	Delete(ctx context.Context, id uint, userID uint) error
 	GetStats(ctx context.Context, userID uint) (*models.NutritionStatsResponse, error)
+	AddMeal(ctx context.Context, nutritionDayID uint, userID uint, req *models.AddMealRequest) (*models.Meal, error)
+	DeleteMeal(ctx context.Context, nutritionDayID uint, mealID uint, userID uint) error
 }
 
 type nutritionService struct {
@@ -145,4 +148,50 @@ func (s *nutritionService) GetStats(ctx context.Context, userID uint) (*models.N
 		return nil, fmt.Errorf("failed to get nutrition stats: %w", err)
 	}
 	return stats, nil
+}
+
+// AddMeal adds a meal item (with one food entry) to a nutrition day
+func (s *nutritionService) AddMeal(ctx context.Context, nutritionDayID uint, userID uint, req *models.AddMealRequest) (*models.Meal, error) {
+	// Verify nutrition day belongs to user
+	if _, err := s.nutritionRepo.GetByID(ctx, nutritionDayID, userID); err != nil {
+		return nil, fmt.Errorf("nutrition day not found: %w", err)
+	}
+
+	// Capitalize meal type: "breakfast" → "Breakfast"
+	mealTypeName := strings.ToUpper(req.MealType[:1]) + strings.ToLower(req.MealType[1:])
+
+	meal := &models.Meal{
+		NutritionDayID: nutritionDayID,
+		Name:           mealTypeName,
+		Foods: []models.Food{
+			{
+				Name:     req.Name,
+				Calories: req.Calories,
+				Protein:  req.Protein,
+				Carbs:    req.Carbs,
+				Fat:      req.Fat,
+				Quantity: 1,
+			},
+		},
+	}
+
+	if err := s.nutritionRepo.CreateMeal(ctx, meal); err != nil {
+		return nil, fmt.Errorf("failed to add meal: %w", err)
+	}
+
+	meal.CalculateTotals()
+	return meal, nil
+}
+
+// DeleteMeal deletes a meal from a nutrition day
+func (s *nutritionService) DeleteMeal(ctx context.Context, nutritionDayID uint, mealID uint, userID uint) error {
+	// Verify nutrition day belongs to user
+	if _, err := s.nutritionRepo.GetByID(ctx, nutritionDayID, userID); err != nil {
+		return fmt.Errorf("nutrition day not found: %w", err)
+	}
+
+	if err := s.nutritionRepo.DeleteMeal(ctx, mealID, nutritionDayID); err != nil {
+		return fmt.Errorf("failed to delete meal: %w", err)
+	}
+	return nil
 }

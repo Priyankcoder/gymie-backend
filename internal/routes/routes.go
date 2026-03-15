@@ -104,6 +104,8 @@ func SetupRouter(services *service.Services, cfg *config.Config) *gin.Engine {
 				nutrition.GET("/:id", nutritionHandler.GetByID)
 				nutrition.PUT("/:id", nutritionHandler.Update)
 				nutrition.DELETE("/:id", nutritionHandler.Delete)
+				nutrition.POST("/:id/meals", nutritionHandler.AddMeal)
+				nutrition.DELETE("/:id/meals/:meal_id", nutritionHandler.DeleteMeal)
 			}
 
 			// Progress routes

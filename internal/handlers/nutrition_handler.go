@@ -263,6 +263,71 @@ func (h *NutritionHandler) Delete(c *gin.Context) {
 	))
 }
 
+// AddMeal adds a meal item to an existing nutrition day
+// @Summary Add meal to nutrition day
+// @Tags nutrition
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path int true "Nutrition Day ID"
+// @Param request body models.AddMealRequest true "Meal details"
+// @Success 201 {object} models.SuccessResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Router /nutrition/{id}/meals [post]
+func (h *NutritionHandler) AddMeal(c *gin.Context) {
+	userID, _ := middleware.GetUserID(c)
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+
+	var req models.AddMealRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"validation_error",
+			"Invalid request body",
+			err.Error(),
+		))
+		return
+	}
+
+	meal, err := h.nutritionService.AddMeal(c.Request.Context(), uint(id), userID, &req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"add_meal_failed",
+			err.Error(),
+			nil,
+		))
+		return
+	}
+
+	c.JSON(http.StatusCreated, models.NewSuccessResponse("Meal added successfully", meal))
+}
+
+// DeleteMeal deletes a meal from a nutrition day
+// @Summary Delete meal from nutrition day
+// @Tags nutrition
+// @Produce json
+// @Security Bearer
+// @Param id path int true "Nutrition Day ID"
+// @Param meal_id path int true "Meal ID"
+// @Success 200 {object} models.SuccessResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Router /nutrition/{id}/meals/{meal_id} [delete]
+func (h *NutritionHandler) DeleteMeal(c *gin.Context) {
+	userID, _ := middleware.GetUserID(c)
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	mealID, _ := strconv.ParseUint(c.Param("meal_id"), 10, 32)
+
+	if err := h.nutritionService.DeleteMeal(c.Request.Context(), uint(id), uint(mealID), userID); err != nil {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"delete_meal_failed",
+			err.Error(),
+			nil,
+		))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.NewSuccessResponse("Meal deleted successfully", nil))
+}
+
 // GetStats retrieves nutrition statistics
 // @Summary Get nutrition stats
 // @Description Get nutrition statistics for the authenticated user
