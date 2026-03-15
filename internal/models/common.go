@@ -67,6 +67,9 @@ func NewErrorResponse(error, message string, details interface{}) *ErrorResponse
 
 // NewPaginatedResponse creates a new paginated response
 func NewPaginatedResponse(data interface{}, total int64, page, pageSize int) *PaginatedResponse {
+	if pageSize <= 0 {
+		pageSize = 20
+	}
 	totalPages := int(total) / pageSize
 	if int(total)%pageSize != 0 {
 		totalPages++

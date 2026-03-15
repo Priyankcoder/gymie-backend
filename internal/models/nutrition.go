@@ -9,8 +9,8 @@ import (
 // NutritionDay represents a day's nutrition tracking
 type NutritionDay struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
-	UserID    uint           `gorm:"not null;index" json:"userId"`
-	Date      time.Time      `gorm:"not null;index:idx_user_date,unique" json:"date"`
+	UserID    uint           `gorm:"not null;index:idx_nutrition_user_date" json:"userId"`
+	Date      time.Time      `gorm:"not null;index:idx_nutrition_user_date,unique" json:"date"`
 	Notes     string         `json:"notes,omitempty"`
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`

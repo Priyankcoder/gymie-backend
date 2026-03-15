@@ -218,10 +218,12 @@ func (r *nutritionRepository) GetNutritionStats(ctx context.Context, userID uint
 	var stats models.NutritionStatsResponse
 
 	// Get total days
-	r.db.WithContext(ctx).
+	if err := r.db.WithContext(ctx).
 		Model(&models.NutritionDay{}).
 		Where("user_id = ?", userID).
-		Count(&stats.TotalDays)
+		Count(&stats.TotalDays).Error; err != nil {
+		return nil, err
+	}
 
 	// Get last logged date
 	var lastDay models.NutritionDay
