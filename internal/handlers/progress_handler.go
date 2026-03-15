@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -130,6 +131,15 @@ func (h *ProgressHandler) CreateProgressPhoto(c *gin.Context) {
 			"validation_error",
 			"Invalid request body",
 			err.Error(),
+		))
+		return
+	}
+
+	if !strings.HasPrefix(req.ImageURL, "https://") {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"validation_error",
+			"imageUrl must be a valid HTTPS URL",
+			nil,
 		))
 		return
 	}

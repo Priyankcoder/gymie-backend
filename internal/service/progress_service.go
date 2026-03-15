@@ -105,14 +105,14 @@ func (s *progressService) UploadProgressPhoto(ctx context.Context, userID uint, 
 	return photo, nil
 }
 
-// CreateProgressPhoto creates a new progress photo
+// CreateProgressPhoto creates a new progress photo record with a pre-uploaded image URL
 func (s *progressService) CreateProgressPhoto(ctx context.Context, userID uint, req *models.ProgressPhotoCreateRequest) (*models.ProgressPhoto, error) {
 	photo := &models.ProgressPhoto{
 		UserID:   userID,
 		Date:     req.Date,
 		Weight:   req.Weight,
 		Notes:    req.Notes,
-		ImageURL: "", // Will be set after upload
+		ImageURL: req.ImageURL,
 	}
 
 	if err := s.progressRepo.CreateProgressPhoto(ctx, photo); err != nil {
