@@ -158,7 +158,11 @@ func (s *nutritionService) AddMeal(ctx context.Context, nutritionDayID uint, use
 	}
 
 	// Capitalize meal type: "breakfast" → "Breakfast"
-	mealTypeName := strings.ToUpper(req.MealType[:1]) + strings.ToLower(req.MealType[1:])
+	trimmed := strings.TrimSpace(req.MealType)
+	if trimmed == "" {
+		return nil, fmt.Errorf("mealType cannot be empty")
+	}
+	mealTypeName := strings.ToUpper(trimmed[:1]) + strings.ToLower(trimmed[1:])
 
 	meal := &models.Meal{
 		NutritionDayID: nutritionDayID,

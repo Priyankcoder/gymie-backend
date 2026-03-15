@@ -82,7 +82,7 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*models.
 
 // Update updates a user and invalidates cache
 func (r *userRepository) Update(ctx context.Context, user *models.User) error {
-	if err := r.db.WithContext(ctx).Save(user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Omit("password").Save(user).Error; err != nil {
 		return err
 	}
 

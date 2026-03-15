@@ -20,14 +20,11 @@ type BrevoEmailService struct {
 func NewBrevoEmailService(cfg *config.Config) *BrevoEmailService {
 	// Validate API key
 	if cfg.BrevoAPIKey == "" {
-		log.Println("❌ CRITICAL ERROR: Brevo API key is empty!")
-		panic("BREVO_API_KEY environment variable is required")
+		log.Fatal("BREVO_API_KEY environment variable is required")
 	}
 
 	if len(cfg.BrevoAPIKey) < 20 {
-		log.Printf("❌ CRITICAL ERROR: Brevo API key is too short (%d chars)\n", len(cfg.BrevoAPIKey))
-		log.Println("   Expected format: xkeysib-xxxxx... (typically 64+ characters)")
-		panic("Invalid BREVO_API_KEY - key appears to be incomplete")
+		log.Fatalf("Invalid BREVO_API_KEY - key appears to be incomplete (%d chars)", len(cfg.BrevoAPIKey))
 	}
 
 	// Initialize Brevo client
@@ -43,32 +40,15 @@ func NewBrevoEmailService(cfg *config.Config) *BrevoEmailService {
 		frontendURL: cfg.FrontendURL,
 	}
 
-	log.Println("=== BREVO EMAIL SERVICE INITIALIZED ===")
-	// Safe logging - only show first 10 and last 4 chars
-	maskedKey := cfg.BrevoAPIKey[:min(10, len(cfg.BrevoAPIKey))] + "****"
-	if len(cfg.BrevoAPIKey) > 4 {
-		maskedKey += cfg.BrevoAPIKey[len(cfg.BrevoAPIKey)-4:]
-	}
-	log.Printf("API Key: %s (%d chars)\n", maskedKey, len(cfg.BrevoAPIKey))
-	log.Printf("From: %s <%s>\n", service.fromName, service.fromEmail)
-	log.Printf("Frontend URL: %s\n", service.frontendURL)
-	log.Println("==========================================")
+	log.Printf("Brevo email service initialized (from: %s <%s>)\n", service.fromName, service.fromEmail)
 
 	return service
 }
 
 func (s *BrevoEmailService) SendVerificationEmail(toEmail, userName, verificationToken string) error {
-	log.Printf("\n╔══════════════════════════════════════════════════════════════╗\n")
-	log.Printf("║     PREPARING VERIFICATION EMAIL - Brevo Service            ║\n")
-	log.Printf("╚══════════════════════════════════════════════════════════════╝\n")
-	log.Printf("[PREPARE] Building verification email...\n")
-	log.Printf("  ├─ To: %s\n", toEmail)
-	log.Printf("  ├─ User Name: %s\n", userName)
-	log.Printf("  ├─ Token: %s\n", verificationToken)
-	log.Printf("  ├─ Frontend URL: %s\n", s.frontendURL)
+	log.Printf("Sending verification email to %s\n", toEmail)
 
 	verificationLink := fmt.Sprintf("%s/verify-email?token=%s", s.frontendURL, verificationToken)
-	log.Printf("  └─ Verification Link: %s\n", verificationLink)
 
 	subject := "Verify Your Gymie Account"
 
@@ -156,17 +136,9 @@ If you didn't create an account with Gymie, you can safely ignore this email.
 }
 
 func (s *BrevoEmailService) SendPasswordResetEmail(toEmail, userName, resetToken string) error {
-	log.Printf("\n╔══════════════════════════════════════════════════════════════╗\n")
-	log.Printf("║     PREPARING PASSWORD RESET EMAIL - Brevo Service          ║\n")
-	log.Printf("╚══════════════════════════════════════════════════════════════╝\n")
-	log.Printf("[PREPARE] Building password reset email...\n")
-	log.Printf("  ├─ To: %s\n", toEmail)
-	log.Printf("  ├─ User Name: %s\n", userName)
-	log.Printf("  ├─ Token: %s\n", resetToken)
-	log.Printf("  ├─ Frontend URL: %s\n", s.frontendURL)
+	log.Printf("Sending password reset email to %s\n", toEmail)
 
 	resetLink := fmt.Sprintf("%s/reset-password?token=%s", s.frontendURL, resetToken)
-	log.Printf("  └─ Reset Link: %s\n", resetLink)
 
 	subject := "Reset Your Gymie Password"
 
@@ -247,24 +219,10 @@ If you didn't request a password reset, please ignore this email or contact supp
 }
 
 func (s *BrevoEmailService) sendEmail(to, subject, plainTextContent, htmlContent string) error {
-	log.Printf("\n╔══════════════════════════════════════════════════════════════╗\n")
-	log.Printf("║          BREVO EMAIL SENDING - DEBUG LOG                     ║\n")
-	log.Printf("╚══════════════════════════════════════════════════════════════╝\n")
-
-	log.Printf("[STEP 1] Validating Brevo configuration...\n")
-	log.Printf("  ├─ API Key Length: %d characters\n", len(s.apiKey))
-	log.Printf("  ├─ API Key Prefix: %s****\n", s.apiKey[:min(10, len(s.apiKey))])
-	log.Printf("  ├─ From Email: %s\n", s.fromEmail)
-	log.Printf("  ├─ From Name: %s\n", s.fromName)
-	log.Printf("  ├─ Frontend URL: %s\n", s.frontendURL)
-	log.Printf("  └─ To Email: %s\n", to)
-
 	if s.apiKey == "" {
-		log.Printf("❌ [ERROR] Brevo API key is empty!\n")
 		return fmt.Errorf("brevo API key is not configured")
 	}
 
-	log.Printf("\n[STEP 2] Creating email message...\n")
 	email := brevo.SendSmtpEmail{
 		Sender: &brevo.SendSmtpEmailSender{
 			Email: s.fromEmail,
@@ -280,75 +238,24 @@ func (s *BrevoEmailService) sendEmail(to, subject, plainTextContent, htmlContent
 		HtmlContent: htmlContent,
 		TextContent: plainTextContent,
 	}
-	log.Printf("  ├─ From: %s <%s>\n", s.fromName, s.fromEmail)
-	log.Printf("  ├─ To: %s\n", to)
-	log.Printf("  ├─ Subject: %s\n", subject)
-	log.Printf("  ├─ Plain text length: %d bytes\n", len(plainTextContent))
-	log.Printf("  └─ HTML content length: %d bytes\n", len(htmlContent))
-
-	log.Printf("\n[STEP 3] Sending email via Brevo API...\n")
-	log.Printf("  ├─ Endpoint: https://api.brevo.com/v3/smtp/email\n")
-	log.Printf("  └─ Making API request...\n")
 
 	ctx := context.Background()
 	result, response, err := s.client.TransactionalEmailsApi.SendTransacEmail(ctx, email)
 
 	if err != nil {
-		log.Printf("\n❌ [STEP 4] BREVO API ERROR\n")
-		log.Printf("  ├─ Error Type: %T\n", err)
-		log.Printf("  ├─ Error Message: %v\n", err)
+		statusCode := 0
 		if response != nil {
-			log.Printf("  ├─ HTTP Status: %d\n", response.StatusCode)
+			statusCode = response.StatusCode
 		}
-		log.Printf("  └─ This usually means:\n")
-		log.Printf("      • Network connectivity issues\n")
-		log.Printf("      • Invalid API key\n")
-		log.Printf("      • Brevo service down\n")
-		log.Printf("      • Sender email not verified\n")
+		log.Printf("Brevo API error sending to %s: %v (status %d)\n", to, err, statusCode)
 		return fmt.Errorf("brevo API request failed: %w", err)
 	}
 
-	log.Printf("\n[STEP 5] Processing Brevo response...\n")
-	log.Printf("  ├─ Status Code: %d\n", response.StatusCode)
-	if result.MessageId != "" {
-		log.Printf("  ├─ Message ID: %s\n", result.MessageId)
-	}
-
 	if response.StatusCode >= 400 {
-		log.Printf("\n❌ [ERROR] Brevo returned error status\n")
-		log.Printf("  ├─ Status Code: %d\n", response.StatusCode)
-		log.Printf("  └─ Common causes:\n")
-
-		switch response.StatusCode {
-		case 400:
-			log.Printf("      • Invalid request (check email format)\n")
-		case 401:
-			log.Printf("      • Invalid API key\n")
-		case 402:
-			log.Printf("      • Account needs payment or credits\n")
-		case 403:
-			log.Printf("      • Forbidden (check sender verification)\n")
-		case 429:
-			log.Printf("      • Rate limit exceeded\n")
-		case 500, 502, 503:
-			log.Printf("      • Brevo server error (try again later)\n")
-		}
-
+		log.Printf("Brevo returned error status %d for email to %s\n", response.StatusCode, to)
 		return fmt.Errorf("brevo error (status %d)", response.StatusCode)
 	}
 
-	log.Printf("\n✅ [SUCCESS] Email sent via Brevo!\n")
-	log.Printf("  ├─ Status Code: %d\n", response.StatusCode)
-	log.Printf("  ├─ Message ID: %s\n", result.MessageId)
-	log.Printf("  └─ Email delivered to Brevo successfully\n")
-	log.Printf("\n═══════════════════════════════════════════════════════════════\n\n")
-
+	log.Printf("Email sent via Brevo to %s (messageId: %s)\n", to, result.MessageId)
 	return nil
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }

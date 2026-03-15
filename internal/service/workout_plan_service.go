@@ -512,6 +512,10 @@ func (s *workoutPlanService) GenerateFromRecurrence(ctx context.Context, userID 
 		return nil, errors.New("plan has no recurrence set")
 	}
 
+	if len(plan.Days) == 0 {
+		return nil, errors.New("plan has no days configured")
+	}
+
 	var recurrence models.PlanRecurrence
 	if err := json.Unmarshal([]byte(plan.Recurrence), &recurrence); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal recurrence: %w", err)

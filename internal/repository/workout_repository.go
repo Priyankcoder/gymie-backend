@@ -227,25 +227,31 @@ func (r *workoutRepository) GetWorkoutStats(ctx context.Context, userID uint) (*
 	var stats models.WorkoutStatsResponse
 
 	// Get total workouts
-	r.db.WithContext(ctx).
+	if err := r.db.WithContext(ctx).
 		Model(&models.Workout{}).
 		Where("user_id = ?", userID).
-		Count(&stats.TotalWorkouts)
+		Count(&stats.TotalWorkouts).Error; err != nil {
+		return nil, err
+	}
 
 	// Get total exercises
-	r.db.WithContext(ctx).
+	if err := r.db.WithContext(ctx).
 		Model(&models.Exercise{}).
 		Joins("JOIN workouts ON exercises.workout_id = workouts.id").
 		Where("workouts.user_id = ?", userID).
-		Count(&stats.TotalExercises)
+		Count(&stats.TotalExercises).Error; err != nil {
+		return nil, err
+	}
 
 	// Get total sets
-	r.db.WithContext(ctx).
+	if err := r.db.WithContext(ctx).
 		Model(&models.WorkoutSet{}).
 		Joins("JOIN exercises ON workout_sets.exercise_id = exercises.id").
 		Joins("JOIN workouts ON exercises.workout_id = workouts.id").
 		Where("workouts.user_id = ?", userID).
-		Count(&stats.TotalSets)
+		Count(&stats.TotalSets).Error; err != nil {
+		return nil, err
+	}
 
 	// Get last workout date
 	var lastWorkout models.Workout
@@ -257,11 +263,13 @@ func (r *workoutRepository) GetWorkoutStats(ctx context.Context, userID uint) (*
 	}
 
 	// Calculate average duration
-	r.db.WithContext(ctx).
+	if err := r.db.WithContext(ctx).
 		Model(&models.Workout{}).
 		Where("user_id = ? AND duration IS NOT NULL", userID).
-		Select("AVG(duration)").
-		Scan(&stats.AverageDuration)
+		Select("COALESCE(AVG(duration), 0)").
+		Scan(&stats.AverageDuration).Error; err != nil {
+		return nil, err
+	}
 
 	return &stats, nil
 }

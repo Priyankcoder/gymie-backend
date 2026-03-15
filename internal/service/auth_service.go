@@ -85,18 +85,9 @@ func (s *authService) Register(ctx context.Context, req *models.UserRegisterRequ
 	user.Profile = profile
 
 	// Send verification email (pass token, not full link)
-	fmt.Printf("=== EMAIL DEBUG ===\n")
-	fmt.Printf("Sending verification email to: %s\n", user.Email)
-	fmt.Printf("User name: %s\n", user.Name)
-	fmt.Printf("Verification token: %s\n", verificationToken)
-	fmt.Printf("Frontend URL: %s\n", s.cfg.FrontendURL)
-	fmt.Printf("==================\n")
-
 	if err := s.emailService.SendVerificationEmail(user.Email, user.Name, verificationToken); err != nil {
 		// Log error but don't fail registration
-		fmt.Printf("❌ FAILED to send verification email: %v\n", err)
-	} else {
-		fmt.Printf("✅ Verification email sent successfully to %s\n", user.Email)
+		fmt.Printf("failed to send verification email to %s: %v\n", user.Email, err)
 	}
 
 	// Return response WITHOUT token - user must verify email first

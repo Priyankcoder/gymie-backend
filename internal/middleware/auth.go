@@ -64,7 +64,11 @@ func GetUserID(c *gin.Context) (uint, bool) {
 	if !exists {
 		return 0, false
 	}
-	return userID.(uint), true
+	id, ok := userID.(uint)
+	if !ok {
+		return 0, false
+	}
+	return id, true
 }
 
 // GetUserEmail retrieves the user email from the context
@@ -73,5 +77,9 @@ func GetUserEmail(c *gin.Context) (string, bool) {
 	if !exists {
 		return "", false
 	}
-	return email.(string), true
+	e, ok := email.(string)
+	if !ok {
+		return "", false
+	}
+	return e, true
 }
