@@ -18,7 +18,7 @@ type User struct {
 
 	// Email verification
 	EmailVerified              bool      `gorm:"default:false" json:"emailVerified"`
-	VerificationToken          string    `gorm:"index:idx_users_verification_token;unique" json:"-"`
+	VerificationToken          *string   `gorm:"uniqueIndex" json:"-"`
 	VerificationTokenExpiresAt time.Time `json:"-"`
 
 	// Profile information

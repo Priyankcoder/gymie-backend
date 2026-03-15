@@ -65,7 +65,7 @@ func (s *authService) Register(ctx context.Context, req *models.UserRegisterRequ
 		Password:                   hashedPassword,
 		Name:                       req.Name,
 		EmailVerified:              false,
-		VerificationToken:          verificationToken,
+		VerificationToken:          &verificationToken,
 		VerificationTokenExpiresAt: time.Now().Add(24 * time.Hour),
 	}
 
