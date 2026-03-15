@@ -39,10 +39,10 @@ type WeightEntry struct {
 
 // ProgressPhotoCreateRequest represents the request to create a progress photo
 type ProgressPhotoCreateRequest struct {
-	Date   time.Time `json:"date" binding:"required"`
-	Weight *float64  `json:"weight,omitempty"`
-	Notes  string    `json:"notes,omitempty"`
-	// Image will be uploaded separately via multipart form
+	ImageURL string    `json:"imageUrl" binding:"required"`
+	Date     time.Time `json:"date" binding:"required"`
+	Weight   *float64  `json:"weight,omitempty"`
+	Notes    string    `json:"notes,omitempty"`
 }
 
 // ProgressPhotoUpdateRequest represents the request to update a progress photo
