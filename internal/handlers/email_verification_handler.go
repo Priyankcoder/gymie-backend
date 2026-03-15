@@ -82,11 +82,13 @@ func (h *EmailVerificationHandler) VerifyEmail(c *gin.Context) {
 		return
 	}
 
-	// Verify the email
-	user.EmailVerified = true
-	user.VerificationToken = "" // Clear the token after use
-
-	if err := h.db.Save(&user).Error; err != nil {
+	// Verify the email - use Updates with map to set token to NULL (not empty string)
+	// to avoid unique constraint violation on verification_token
+	if err := h.db.Model(&user).Updates(map[string]interface{}{
+		"email_verified":               true,
+		"verification_token":           nil,
+		"verification_token_expires_at": nil,
+	}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, models.NewErrorResponse(
 			"server_error",
 			"Failed to verify email",
@@ -172,7 +174,7 @@ func (h *EmailVerificationHandler) ResendVerificationEmail(c *gin.Context) {
 
 	tokenExpiry := time.Now().Add(24 * time.Hour)
 
-	user.VerificationToken = verificationToken
+	user.VerificationToken = &verificationToken
 	user.VerificationTokenExpiresAt = tokenExpiry
 
 	if err := h.db.Save(&user).Error; err != nil {
