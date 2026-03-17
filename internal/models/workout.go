@@ -26,15 +26,16 @@ type Workout struct {
 
 // Exercise represents an exercise within a workout
 type Exercise struct {
-	ID          uint           `gorm:"primaryKey" json:"id"`
-	WorkoutID   uint           `gorm:"not null;index" json:"workoutId"`
-	Name        string         `gorm:"not null" json:"name"`
-	MuscleGroup string         `json:"muscleGroup,omitempty"` // "chest", "back", "legs", etc.
-	Order       int            `gorm:"not null" json:"order"` // Order of exercise in workout
-	Notes       string         `json:"notes,omitempty"`
-	CreatedAt   time.Time      `json:"createdAt"`
-	UpdatedAt   time.Time      `json:"updatedAt"`
-	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	ID           uint           `gorm:"primaryKey" json:"id"`
+	WorkoutID    uint           `gorm:"not null;index" json:"workoutId"`
+	Name         string         `gorm:"not null" json:"name"`
+	ExerciseDbID string         `gorm:"type:varchar(200)" json:"exerciseDbId,omitempty"` // free-exercise-db ID (e.g. "Barbell_Bench_Press_-_Medium_Grip")
+	MuscleGroup  string         `json:"muscleGroup,omitempty"`                           // "chest", "back", "legs", etc.
+	Order        int            `gorm:"not null" json:"order"`                           // Order of exercise in workout
+	Notes        string         `json:"notes,omitempty"`
+	CreatedAt    time.Time      `json:"createdAt"`
+	UpdatedAt    time.Time      `json:"updatedAt"`
+	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relationships
 	Workout Workout      `gorm:"foreignKey:WorkoutID" json:"-"`
@@ -69,11 +70,12 @@ type WorkoutCreateRequest struct {
 
 // ExerciseCreateRequest represents the request to create an exercise
 type ExerciseCreateRequest struct {
-	Name        string             `json:"name" binding:"required"`
-	MuscleGroup string             `json:"muscleGroup,omitempty"`
-	Order       int                `json:"order" binding:"required"`
-	Notes       string             `json:"notes,omitempty"`
-	Sets        []SetCreateRequest `json:"sets,omitempty"`
+	Name         string             `json:"name" binding:"required"`
+	ExerciseDbID string             `json:"exerciseDbId,omitempty"`
+	MuscleGroup  string             `json:"muscleGroup,omitempty"`
+	Order        int                `json:"order" binding:"required"`
+	Notes        string             `json:"notes,omitempty"`
+	Sets         []SetCreateRequest `json:"sets,omitempty"`
 }
 
 // SetCreateRequest represents the request to create a set
@@ -95,10 +97,11 @@ type WorkoutUpdateRequest struct {
 
 // ExerciseUpdateRequest represents the request to update an exercise
 type ExerciseUpdateRequest struct {
-	Name        *string `json:"name,omitempty"`
-	MuscleGroup *string `json:"muscleGroup,omitempty"`
-	Order       *int    `json:"order,omitempty"`
-	Notes       *string `json:"notes,omitempty"`
+	Name         *string `json:"name,omitempty"`
+	ExerciseDbID *string `json:"exerciseDbId,omitempty"`
+	MuscleGroup  *string `json:"muscleGroup,omitempty"`
+	Order        *int    `json:"order,omitempty"`
+	Notes        *string `json:"notes,omitempty"`
 }
 
 // SetUpdateRequest represents the request to update a set

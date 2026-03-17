@@ -46,10 +46,11 @@ func (s *workoutService) Create(ctx context.Context, userID uint, req *models.Wo
 	if req.Exercises != nil {
 		for _, exReq := range req.Exercises {
 			exercise := models.Exercise{
-				Name:        exReq.Name,
-				MuscleGroup: exReq.MuscleGroup,
-				Order:       exReq.Order,
-				Notes:       exReq.Notes,
+				Name:         exReq.Name,
+				ExerciseDbID: exReq.ExerciseDbID,
+				MuscleGroup:  exReq.MuscleGroup,
+				Order:        exReq.Order,
+				Notes:        exReq.Notes,
 			}
 
 			// Add sets
